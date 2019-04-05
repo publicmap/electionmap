@@ -1,0 +1,29 @@
+{
+  "name": "electionmap",
+  "version": "0.0.1",
+  "description": "Electoral Maps",
+  "main": "index.js",
+  "scripts": {
+    "start": "browserify js/index.js > js/dist/index.js && budo js/index.js --serve=js/dist/index.js --live -d",
+    "build": "browserify js/index.js > js/dist/index.js"
+  },
+  "author": "Arun Ganesh",
+  "license": "Unlicense",
+  "devDependencies": {
+    "browserify": "",
+    "budo": ""
+  },
+  "dependencies": {
+    "@mapbox/mapbox-gl-geocoder": "",
+    "@mapbox/mapbox-sdk": "",
+    "xtend": ""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/publicmap/electionmap.git"
+  },
+  "bugs": {
+    "url": "https://github.com/publicmap/electionmap/issues"
+  },
+  "homepage": "https://github.com/publicmap/electionmap#readme"
+}

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Election Map</title>
+  <meta charset='utf-8'>
+  <meta name='viewport' content='width=device-width, initial-scale=1'>
+  <!-- Mapbox Assembly -->
+  <script async defer src='https://api.mapbox.com/mapbox-assembly/v0.23.2/assembly.js'></script>
+  <link href='https://api.mapbox.com/mapbox-assembly/v0.23.2/assembly.min.css' rel='stylesheet'>
+  <!-- Mapbox GL-->
+  <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.53.1/mapbox-gl.js'></script>
+  <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.53.1/mapbox-gl.css' rel='stylesheet' />
+  <!-- Mapbox GL Geocoder -->
+  <script src='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v3.1.6/mapbox-gl-geocoder.min.js'></script>
+  <link rel='stylesheet' href='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v3.1.6/mapbox-gl-geocoder.css' type='text/css' />
+  <!-- Mapbox GL Extensions -->
+  <script src='https://cdn.jsdelivr.net/gh/publicmap/mapbox-gl-tools@master/dist/addMapControls.js'></script>
+  <link href='https://cdn.jsdelivr.net/gh/publicmap/mapbox-gl-tools@master/dist/addMapControls.css' rel='stylesheet'>
+  <!-- jQuery -->
+  <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+</head>
+
+
+<body>
+  <!-- Class names are from assembly.js for styling -->
+  <div class='viewport-full relative clip'>
+    <div class='viewport-twothirds viewport-full-ml relative'>
+      <div id='map' class='absolute top left right bottom'></div>
+    </div>
+    <div class='absolute top-ml left z1 w-full w300-ml py12-ml px12-ml'>
+      <div class='viewport-third h-auto-ml hmax-full bg-white round-ml shadow-darken5 scroll-auto'>
+        <div class='py12 px12 scroll-auto'>
+          <h2 class='txt-xl txt-bold mx6 my6'>Election Map of India</h2>
+          <div class='select-container'>
+            <select id='select-map' class='select'>
+                            <option value='constituencies'>Electoral Constituencies</option>
+                            <option value='election'>Election date 2019</option>
+                        </select>
+            <div class='select-arrow'></div>
+          </div>
+          <p class='mx6'>View <a class='link' href="https://github.com/publicmap/electionmap/">source</a>.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- App script -->
+    <script src='/js/dist/index.js'></script>
+
+</body>
+
+</html>
