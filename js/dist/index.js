@@ -154,6 +154,7 @@ map.on('load', ()=>{
 
 map.on('click', (e) => {
   const tileserverUrl = getTilserverURL(e.lngLat)
+  document.getElementById('infoPanel').innerHTML = 'Loading...'
   fetch(tileserverUrl)
     .then(response => response.json())
     .then(data => {
