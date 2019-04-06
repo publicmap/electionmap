@@ -65,8 +65,6 @@ var locateUser = require('./locate-user')
 // Enable Mapbox services
 mapboxgl.accessToken = 'pk.eyJ1IjoicGxhbmVtYWQiLCJhIjoiY2p1M3JuNnRjMGZ2NzN6bGVqN3Z4bmVtOSJ9.Fx0kmfg-7ll2Oi-7ZVJrfQ';
 
-
-
 // App configuration
 const _app = {
   map: {
@@ -93,7 +91,6 @@ map.on('load', ()=>{
       bbox: _app.map.bounds
     }
   });
-
 });
 
 map.on('click', (e) => {
@@ -101,8 +98,7 @@ map.on('click', (e) => {
 })
 
 
-
-},{"./addMapControls":2,"./locate-user":5,"./show-data-at-point":6}],5:[function(require,module,exports){
+},{"./addMapControls":2,"./locate-user":5,"./show-data-at-point":7}],5:[function(require,module,exports){
 var showDataAtPoint = require('./show-data-at-point')
 var browserLocated = false
 
@@ -155,9 +151,42 @@ function locateUser (map) {
   }, 2000)
 }
 
-},{"./show-data-at-point":6}],6:[function(require,module,exports){
+},{"./show-data-at-point":7}],6:[function(require,module,exports){
+if (typeof Object.assign != 'function') {
+  console.log('This polyfill for Object.assign command is being run in a browser that has an incompatibility issue. See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/assign#Browser_compatibility .');
+  // Must be writable: true, enumerable: false, configurable: true
+  Object.defineProperty(Object, "assign", {
+    value: function assign(target, varArgs) { // .length of function is 2
+      'use strict';
+      if (target == null) { // TypeError if undefined or null
+        throw new TypeError('Cannot convert undefined or null to object');
+      }
+
+      var to = Object(target);
+
+      for (var index = 1; index < arguments.length; index++) {
+        var nextSource = arguments[index];
+
+        if (nextSource != null) { // Skip over if undefined or null
+          for (var nextKey in nextSource) {
+            // Avoid bugs when hasOwnProperty is shadowed
+            if (Object.prototype.hasOwnProperty.call(nextSource, nextKey)) {
+              to[nextKey] = nextSource[nextKey];
+            }
+          }
+        }
+      }
+      return to;
+    },
+    writable: true,
+    configurable: true
+  });
+}
+
+},{}],7:[function(require,module,exports){
 var getTilequeryURL = require('./get-tilequery-url')
 var ECILookup = require('./ECILookup')
+require('./object-assign-polyfill')
 
 module.exports = showDataAtPoint
 
@@ -174,32 +203,27 @@ function showDataAtPoint (lngLat) {
   fetch(tilequeryURL)
     .then(response => response.json())
     .then(data => {
-      // In states, our data will be in second place in features array. For Union Territories, first.
-      var holder = {};
-      if( data.features.length > 1) {
-        holder = data.features[1];
-      } else {
-        holder = data.features[0];
-      }
+      // merge the damn properies
+      var holder = Object.assign({}, data.features[0].properties, data.features[1].properties);
 
-      var ECI_code = ECILookup[String(holder.properties.st_code)]['ECI_code'];
+      var ECI_code = ECILookup[String(holder.st_code)]['ECI_code'];
 
       // Composing link to Official ECI candidates affidavits page: https://affidavit.eci.gov.in/showaffidavit/1/S13/34/PC
-      var ECIAffidavit_URL = `https://affidavit.eci.gov.in/showaffidavit/1/${ECI_code}/${String(holder.properties.pc_no)}/PC`;
+      var ECIAffidavit_URL = `https://affidavit.eci.gov.in/showaffidavit/1/${ECI_code}/${String(holder.pc_no)}/PC`;
 
       // Composing info
-      var info = `<big>2019 Lok Sabha Elections</big><br>
-      <span class='txt-light'>Your Constituency: </span><b>${holder.properties.pc_name}</b> (${holder.properties.pc_no})<br>
-      <span class='txt-light'>Voting is on: </span><b>${holder.properties['2019_election_date'].split('T')[0]}</b> (Phase ${holder.properties['2019_election_phase']})<br>
-      <a href="${ECIAffidavit_URL}" target="_blank">Click here to see the Candidates</a> <br>
-      State: ${holder.properties.st_name} (${ECI_code})<br>
+      var info = `<span class='txt-light'>2019 Lok Sabha Elections</span><br>
+      <span class='txt-light'>Your Constituency: </span><b>${holder.pc_name}</b> (${holder.pc_no})<br>
+      <span class='txt-light'>Voting is on: </span><b>${holder['2019_election_date'].split('T')[0]}</b> (Phase ${holder['2019_election_phase']})<br>
+      <a href="${ECIAffidavit_URL}" target="_blank" class="link">Click here to see the Candidates</a> <br>
+      State: ${holder.st_name} (${ECI_code})<br>
       `;
       document.getElementById('infoPanel').classList.remove('loading');
       document.getElementById('infoPanel').innerHTML = info
     })
     .catch(err => {
-      document.getElementById('infoPanel').classList.add('loading');
-      document.getElementById('infoPanel').innerHTML = 'Error while fetching data for ${e.lngLat.lng},${e.lngLat.lat}'
+      document.getElementById('infoPanel').classList.remove('loading');
+      document.getElementById('infoPanel').innerHTML = `Error while fetching data for that location`;
     })
 }
-},{"./ECILookup":1,"./get-tilequery-url":3}]},{},[4]);
+},{"./ECILookup":1,"./get-tilequery-url":3,"./object-assign-polyfill":6}]},{},[4]);

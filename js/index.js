@@ -7,8 +7,6 @@ var locateUser = require('./locate-user')
 // Enable Mapbox services
 mapboxgl.accessToken = 'pk.eyJ1IjoicGxhbmVtYWQiLCJhIjoiY2p1M3JuNnRjMGZ2NzN6bGVqN3Z4bmVtOSJ9.Fx0kmfg-7ll2Oi-7ZVJrfQ';
 
-
-
 // App configuration
 const _app = {
   map: {
@@ -35,11 +33,9 @@ map.on('load', ()=>{
       bbox: _app.map.bounds
     }
   });
-
 });
 
 map.on('click', (e) => {
   showDataAtPoint(e.lngLat) 
 })
-
 
