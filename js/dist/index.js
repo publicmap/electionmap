@@ -181,18 +181,20 @@ map.on('click', (e) => {
       var ECIAffidavit_URL = `https://affidavit.eci.gov.in/showaffidavit/1/${ECI_code}/${String(holder.properties.pc_no)}/PC`;
 
       // Composing info
-      var info = `<big>2019 Lok Sabha Elections</big><br>
+      var info = `<span class='txt-light'>2019 Lok Sabha Elections</span><br>
       <span class='txt-light'>Your Constituency: </span><b>${holder.properties.pc_name}</b> (${holder.properties.pc_no})<br>
       <span class='txt-light'>Voting is on: </span><b>${holder.properties['2019_election_date'].split('T')[0]}</b> (Phase ${holder.properties['2019_election_phase']})<br>
-      <a href="${ECIAffidavit_URL}" target="_blank">Click here to see the Candidates</a> <br>
+      <a href="${ECIAffidavit_URL}" target="_blank" class="link">Click here to see the Candidates</a> <br>
       State: ${holder.properties.st_name} (${ECI_code})<br>
       `;
       document.getElementById('infoPanel').classList.remove('loading');
       document.getElementById('infoPanel').innerHTML = info
     })
     .catch(err => {
-      document.getElementById('infoPanel').classList.add('loading');
-      document.getElementById('infoPanel').innerHTML = 'Error while fetching data for ${e.lngLat.lng},${e.lngLat.lat}'
+      document.getElementById('infoPanel').classList.remove('loading');
+      let lat = Math.round(e.lngLat.lat * 100000)/100000;
+      let lng = Math.round(e.lngLat.lng * 100000)/100000;
+      document.getElementById('infoPanel').innerHTML = `Error while fetching data for ${lat},${lng}.`;
     })
     
 })
