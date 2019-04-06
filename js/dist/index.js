@@ -8,10 +8,6 @@ module.exports = {"1":{"ECI_code":"S09","state":"Jammu & Kashmir"},"2":{"ECI_cod
 
 function addMapControls(map, accessToken, options) {
 
-  map.on('load', () => {
-    geolocateControl.trigger();
-  })
-
   // Add  map UI controls
   var nav = new mapboxgl.NavigationControl();
   map.addControl(nav, 'top-right');
@@ -42,65 +38,11 @@ function addMapControls(map, accessToken, options) {
   map.addControl(scale);
 
 
-  var geolocateControl = new mapboxgl.GeolocateControl({
-    positionOptions: {
-      enableHighAccuracy: false,
-      timeout: 4000
-    },
-    trackUserLocation: true,
-    fitBoundsOptions: {
-      maxZoom: 6
-    }
-  })
-
-  // Add geolocate control on mobile devices else fallback to IP geolocation
-  if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
-
-    map.addControl(geolocateControl, 'bottom-left');
-
-    geolocateControl.on('trackuserlocationstart', () => fetchFeaturesInView());
-
-    geolocateControl.on('error', (e) => {
-
-      // Try IP Geolocation
-      fetch(options.geoip.server)
-        .then(response => response.json())
-        .then(body => {
-          map.flyTo({
-            center: [body.longitude, body.latitude],
-            zoom: 6
-          });
-          fetchFeaturesInView();
-        })
-
-      if (e.PERMISSION_DENIED == 1) {
-        map.removeControl(geolocateControl);
-      }
-
-    })
-
-  } else {
-    console.log('1')
-    map.on('load', () => {
-      // Try IP Geolocation
-      console.log('2')
-      fetch(options.geoip.server)
-        .then(response => response.json())
-        .then(body => {
-          map.flyTo({
-            center: [body.longitude, body.latitude],
-            zoom: 6
-          });
-        })
-    })
-  }
-
   map.addControl(new mapboxgl.FullscreenControl(), 'bottom-right');
 
   return {
     NavigationControl : nav,
     MapboxGeocoder : geocoder,
-    GeolocateControl : geolocateControl,
     ScaleControl : scale
   }
 }
@@ -108,18 +50,20 @@ function addMapControls(map, accessToken, options) {
 module.exports = addMapControls;
 
 },{}],3:[function(require,module,exports){
-'use strict';
-
-var addMapControls = require('./addMapControls')
-var ECILookup = require('./ECILookup')
-require('./object-assign-polyfill')
-
-// Enable Mapbox services
-mapboxgl.accessToken = 'pk.eyJ1IjoicGxhbmVtYWQiLCJhIjoiY2p1M3JuNnRjMGZ2NzN6bGVqN3Z4bmVtOSJ9.Fx0kmfg-7ll2Oi-7ZVJrfQ';
+module.exports = getTilequeryURL
 
 function getTilequeryURL (lngLat) {
   return `https://api.mapbox.com/v4/planemad.3picr4b8/tilequery/${lngLat.lng},${lngLat.lat}.json?limit=5&radius=0&dedupe=true&access_token=${mapboxgl.accessToken}`
 }
+},{}],4:[function(require,module,exports){
+'use strict';
+
+var addMapControls = require('./addMapControls')
+var showDataAtPoint = require('./show-data-at-point')
+var locateUser = require('./locate-user')
+
+// Enable Mapbox services
+mapboxgl.accessToken = 'pk.eyJ1IjoicGxhbmVtYWQiLCJhIjoiY2p1M3JuNnRjMGZ2NzN6bGVqN3Z4bmVtOSJ9.Fx0kmfg-7ll2Oi-7ZVJrfQ';
 
 // App configuration
 const _app = {
@@ -139,61 +83,75 @@ const _app = {
 var map = new mapboxgl.Map(_app.map.init);
 
 map.on('load', ()=>{
-
+  locateUser(map)
   addMapControls(map, mapboxgl.accessToken, {
     MapboxGeocoder: {
       position:'top-right',
       country: 'in',
       bbox: _app.map.bounds
-    },
-    geoip: {
-      server: 'https://publicmap-freegeoip.herokuapp.com/json/'
     }
   });
-
 });
 
 map.on('click', (e) => {
-  const tilequeryURL = getTilequeryURL(e.lngLat)
-
-  // Add a loading spinner to the infoPanel while we fetch data
-  document.getElementById('infoPanel').innerHTML = '';
-  document.getElementById('infoPanel').classList.add('loading','loading--s');
-
-  // use fetch to fetch data - this maintains consistency with using fetch elsewhere
-  // if we have browser considerations where `fetch` does not work,
-  // we can replace this with $.getJSON or so
-  fetch(tilequeryURL)
-    .then(response => response.json())
-    .then(data => {
-      // merge the damn properies
-      var holder = Object.assign({}, data.features[0].properties, data.features[1].properties);
-
-      var ECI_code = ECILookup[String(holder.st_code)]['ECI_code'];
-
-      // Composing link to Official ECI candidates affidavits page: https://affidavit.eci.gov.in/showaffidavit/1/S13/34/PC
-      var ECIAffidavit_URL = `https://affidavit.eci.gov.in/showaffidavit/1/${ECI_code}/${String(holder.pc_no)}/PC`;
-
-      // Composing info
-      var info = `<span class='txt-light'>2019 Lok Sabha Elections</span><br>
-      <span class='txt-light'>Your Constituency: </span><b>${holder.pc_name}</b> (${holder.pc_no})<br>
-      <span class='txt-light'>Voting is on: </span><b>${holder['2019_election_date'].split('T')[0]}</b> (Phase ${holder['2019_election_phase']})<br>
-      <a href="${ECIAffidavit_URL}" target="_blank" class="link">Click here to see the Candidates</a> <br>
-      State: ${holder.st_name} (${ECI_code})<br>
-      `;
-      document.getElementById('infoPanel').classList.remove('loading');
-      document.getElementById('infoPanel').innerHTML = info
-    })
-    .catch(err => {
-      document.getElementById('infoPanel').classList.remove('loading');
-      let lat = Math.round(e.lngLat.lat * 100000)/100000;
-      let lng = Math.round(e.lngLat.lng * 100000)/100000;
-      document.getElementById('infoPanel').innerHTML = `Error while fetching data for ${lat},${lng}.`;
-    })
-    
+  showDataAtPoint(e.lngLat) 
 })
 
-},{"./ECILookup":1,"./addMapControls":2,"./object-assign-polyfill":4}],4:[function(require,module,exports){
+
+},{"./addMapControls":2,"./locate-user":5,"./show-data-at-point":7}],5:[function(require,module,exports){
+var showDataAtPoint = require('./show-data-at-point')
+var browserLocated = false
+
+module.exports = locateUser
+
+function showLocation (position) {
+  browserLocated = true
+  var lngLat = {
+    lng: position.coords.longitude,
+    lat: position.coords.latitude
+  }
+  map.flyTo({
+    center: [lngLat.lng, lngLat.lat],
+    zoom: 8
+  })
+  showDataAtPoint(lngLat)
+}
+
+function errorHandler (err) {
+  console.log('error getting user location', err)
+}
+
+function locateUser (map) {
+  if(navigator.geolocation) {         
+    // timeout at 60000 milliseconds (60 seconds)
+    var options = {timeout:60000}
+    navigator.geolocation.getCurrentPosition(showLocation, errorHandler, options)
+  } else {
+    console.log("Browser does not support geolocation!")
+  }
+
+  // we fire the IP location request after 2 seconds
+  // if the browser location has not worked until then
+  setTimeout(() => {
+    if (browserLocated) return
+    fetch('https://publicmap-freegeoip.herokuapp.com/json/')
+      .then(response => response.json())
+      .then(body => {
+        if (!browserLocated) {
+          map.flyTo({
+            center: [body.longitude, body.latitude],
+            zoom: 6
+          });
+          showDataAtPoint({
+            lng: body.longitude,
+            lat: body.latitude
+          })
+        }
+      })
+  }, 2000)
+}
+
+},{"./show-data-at-point":7}],6:[function(require,module,exports){
 if (typeof Object.assign != 'function') {
   console.log('This polyfill for Object.assign command is being run in a browser that has an incompatibility issue. See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/assign#Browser_compatibility .');
   // Must be writable: true, enumerable: false, configurable: true
@@ -225,4 +183,47 @@ if (typeof Object.assign != 'function') {
   });
 }
 
-},{}]},{},[3]);
+},{}],7:[function(require,module,exports){
+var getTilequeryURL = require('./get-tilequery-url')
+var ECILookup = require('./ECILookup')
+require('./object-assign-polyfill')
+
+module.exports = showDataAtPoint
+
+function showDataAtPoint (lngLat) {
+  const tilequeryURL = getTilequeryURL(lngLat)
+
+  // Add a loading spinner to the infoPanel while we fetch data
+  document.getElementById('infoPanel').innerHTML = '';
+  document.getElementById('infoPanel').classList.add('loading','loading--s');
+
+  // use fetch to fetch data - this maintains consistency with using fetch elsewhere
+  // if we have browser considerations where `fetch` does not work,
+  // we can replace this with $.getJSON or so
+  fetch(tilequeryURL)
+    .then(response => response.json())
+    .then(data => {
+      // merge the damn properies
+      var holder = Object.assign({}, data.features[0].properties, data.features[1].properties);
+
+      var ECI_code = ECILookup[String(holder.st_code)]['ECI_code'];
+
+      // Composing link to Official ECI candidates affidavits page: https://affidavit.eci.gov.in/showaffidavit/1/S13/34/PC
+      var ECIAffidavit_URL = `https://affidavit.eci.gov.in/showaffidavit/1/${ECI_code}/${String(holder.pc_no)}/PC`;
+
+      // Composing info
+      var info = `<span class='txt-light'>2019 Lok Sabha Elections</span><br>
+      <span class='txt-light'>Your Constituency: </span><b>${holder.pc_name}</b> (${holder.pc_no})<br>
+      <span class='txt-light'>Voting is on: </span><b>${holder['2019_election_date'].split('T')[0]}</b> (Phase ${holder['2019_election_phase']})<br>
+      <a href="${ECIAffidavit_URL}" target="_blank" class="link">Click here to see the Candidates</a> <br>
+      State: ${holder.st_name} (${ECI_code})<br>
+      `;
+      document.getElementById('infoPanel').classList.remove('loading');
+      document.getElementById('infoPanel').innerHTML = info
+    })
+    .catch(err => {
+      document.getElementById('infoPanel').classList.remove('loading');
+      document.getElementById('infoPanel').innerHTML = `Error while fetching data for that location`;
+    })
+}
+},{"./ECILookup":1,"./get-tilequery-url":3,"./object-assign-polyfill":6}]},{},[4]);
