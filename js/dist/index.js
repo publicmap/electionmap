@@ -154,7 +154,14 @@ map.on('load', ()=>{
 
 map.on('click', (e) => {
   const tileserverUrl = getTilserverURL(e.lngLat)
+
+  // Add a Loading... to the infoPanel while we fetch data
+  // This can be replaced by a loading gif or so for fanciness
   document.getElementById('infoPanel').innerHTML = 'Loading...'
+
+  // use fetch to fetch data - this maintains consistency with using fetch elsewhere
+  // if we have browser considerations where `fetch` does not work,
+  // we can replace this with $.getJSON or so
   fetch(tileserverUrl)
     .then(response => response.json())
     .then(data => {
@@ -181,8 +188,10 @@ map.on('click', (e) => {
       `;
       document.getElementById('infoPanel').innerHTML = info
     })
+    .catch(err => {
+      document.getElementById('infoPanel').innerHTML = 'Error while fetching data for ${e.lngLat.lng},${e.lngLat.lat}'
+    })
     
-
 })
 
 },{"./ECILookup":1,"./addMapControls":2}]},{},[3]);
