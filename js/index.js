@@ -3,12 +3,13 @@
 var addMapControls = require('./addMapControls')
 var ECILookup = require('./ECILookup')
 
-function getTilserverURL (lngLat) {
-  return `https://api.mapbox.com/v4/planemad.3picr4b8/tilequery/${lngLat.lng},${lngLat.lat}.json?limit=5&radius=0&dedupe=true&access_token=pk.eyJ1IjoicGxhbmVtYWQiLCJhIjoiY2p1MzBiMGtzMGF1NTRkanR6eXdkOGg5MiJ9.vuDqyahjLB1Bk_5bGp2YUw`
-}
 
 // Enable Mapbox services
 mapboxgl.accessToken = 'pk.eyJ1IjoicGxhbmVtYWQiLCJhIjoiY2p1M3JuNnRjMGZ2NzN6bGVqN3Z4bmVtOSJ9.Fx0kmfg-7ll2Oi-7ZVJrfQ';
+
+function getTilequeryURL (lngLat) {
+  return `https://api.mapbox.com/v4/planemad.3picr4b8/tilequery/${lngLat.lng},${lngLat.lat}.json?limit=5&radius=0&dedupe=true&access_token=${mapboxgl.accessToken}`
+}
 
 // App configuration
 const _app = {
@@ -43,16 +44,16 @@ map.on('load', ()=>{
 });
 
 map.on('click', (e) => {
-  const tileserverUrl = getTilserverURL(e.lngLat)
+  const tilequeryURL = getTilequeryURL(e.lngLat)
 
-  // Add a Loading... to the infoPanel while we fetch data
-  // This can be replaced by a loading gif or so for fanciness
-  document.getElementById('infoPanel').innerHTML = 'Loading...'
+  // Add a loading spinner to the infoPanel while we fetch data
+  document.getElementById('infoPanel').innerHTML = '';
+  document.getElementById('infoPanel').classList.add('loading','loading--s');
 
   // use fetch to fetch data - this maintains consistency with using fetch elsewhere
   // if we have browser considerations where `fetch` does not work,
   // we can replace this with $.getJSON or so
-  fetch(tileserverUrl)
+  fetch(tilequeryURL)
     .then(response => response.json())
     .then(data => {
       // In states, our data will be in second place in features array. For Union Territories, first.
@@ -71,14 +72,16 @@ map.on('click', (e) => {
 
       // Composing info
       var info = `<big>2019 Lok Sabha Elections</big><br>
-      Your Constituency: <b>${holder.properties.pc_name}</b> (${holder.properties.pc_no})<br>
-      Election Date: <b>${holder.properties['2019_election_date'].split('T')[0]}</b> (Phase ${holder.properties['2019_election_phase']})<br>
+      <span class='txt-light'>Your Constituency: </span><b>${holder.properties.pc_name}</b> (${holder.properties.pc_no})<br>
+      <span class='txt-light'>Voting is on: </span><b>${holder.properties['2019_election_date'].split('T')[0]}</b> (Phase ${holder.properties['2019_election_phase']})<br>
       <a href="${ECIAffidavit_URL}" target="_blank">Click here to see the Candidates</a> <br>
       State: ${holder.properties.st_name} (${ECI_code})<br>
       `;
+      document.getElementById('infoPanel').classList.remove('loading');
       document.getElementById('infoPanel').innerHTML = info
     })
     .catch(err => {
+      document.getElementById('infoPanel').classList.add('loading');
       document.getElementById('infoPanel').innerHTML = 'Error while fetching data for ${e.lngLat.lng},${e.lngLat.lat}'
     })
     
