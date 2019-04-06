@@ -37,7 +37,7 @@ npm install
 npm run start
 ```
 
-If you made changes to the `js` scripts, do `npm run build` to compile the final javascript file to `js/dist` and commit them before publishing.
+If you made changes to the `js` scripts, do `npm run build` to compile the final javascript file to `js/dist` and commit them before publishing. Do NOT make changes directly to files inside the `dist/` folder.
 
 
 

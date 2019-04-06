@@ -2,7 +2,7 @@
 
 var addMapControls = require('./addMapControls')
 var ECILookup = require('./ECILookup')
-
+require('./object-assign-polyfill')
 
 // Enable Mapbox services
 mapboxgl.accessToken = 'pk.eyJ1IjoicGxhbmVtYWQiLCJhIjoiY2p1M3JuNnRjMGZ2NzN6bGVqN3Z4bmVtOSJ9.Fx0kmfg-7ll2Oi-7ZVJrfQ';
@@ -56,33 +56,29 @@ map.on('click', (e) => {
   fetch(tilequeryURL)
     .then(response => response.json())
     .then(data => {
-      // In states, our data will be in second place in features array. For Union Territories, first.
-      var holder = {};
-      if( data.features.length > 1) {
-        holder = data.features[1];
-      } else {
-        holder = data.features[0];
-      }
+      // merge the damn properies
+      var holder = Object.assign({}, data.features[0].properties, data.features[1].properties);
 
-      var ECI_code = ECILookup[String(holder.properties.st_code)]['ECI_code'];
-      console.log(`state code lookup: ${holder.properties.st_code} maps to ${ECI_code}`);
+      var ECI_code = ECILookup[String(holder.st_code)]['ECI_code'];
 
       // Composing link to Official ECI candidates affidavits page: https://affidavit.eci.gov.in/showaffidavit/1/S13/34/PC
-      var ECIAffidavit_URL = `https://affidavit.eci.gov.in/showaffidavit/1/${ECI_code}/${String(holder.properties.pc_no)}/PC`;
+      var ECIAffidavit_URL = `https://affidavit.eci.gov.in/showaffidavit/1/${ECI_code}/${String(holder.pc_no)}/PC`;
 
       // Composing info
-      var info = `<big>2019 Lok Sabha Elections</big><br>
-      <span class='txt-light'>Your Constituency: </span><b>${holder.properties.pc_name}</b> (${holder.properties.pc_no})<br>
-      <span class='txt-light'>Voting is on: </span><b>${holder.properties['2019_election_date'].split('T')[0]}</b> (Phase ${holder.properties['2019_election_phase']})<br>
-      <a href="${ECIAffidavit_URL}" target="_blank">Click here to see the Candidates</a> <br>
-      State: ${holder.properties.st_name} (${ECI_code})<br>
+      var info = `<span class='txt-light'>2019 Lok Sabha Elections</span><br>
+      <span class='txt-light'>Your Constituency: </span><b>${holder.pc_name}</b> (${holder.pc_no})<br>
+      <span class='txt-light'>Voting is on: </span><b>${holder['2019_election_date'].split('T')[0]}</b> (Phase ${holder['2019_election_phase']})<br>
+      <a href="${ECIAffidavit_URL}" target="_blank" class="link">Click here to see the Candidates</a> <br>
+      State: ${holder.st_name} (${ECI_code})<br>
       `;
       document.getElementById('infoPanel').classList.remove('loading');
       document.getElementById('infoPanel').innerHTML = info
     })
     .catch(err => {
-      document.getElementById('infoPanel').classList.add('loading');
-      document.getElementById('infoPanel').innerHTML = 'Error while fetching data for ${e.lngLat.lng},${e.lngLat.lat}'
+      document.getElementById('infoPanel').classList.remove('loading');
+      let lat = Math.round(e.lngLat.lat * 100000)/100000;
+      let lng = Math.round(e.lngLat.lng * 100000)/100000;
+      document.getElementById('infoPanel').innerHTML = `Error while fetching data for ${lat},${lng}.`;
     })
     
 })
