@@ -1,5 +1,7 @@
 'use strict';
 
+var addMapControls = require('./addMapControls')
+
 // Enable Mapbox services
 mapboxgl.accessToken = 'pk.eyJ1IjoicGxhbmVtYWQiLCJhIjoiY2p1M3JuNnRjMGZ2NzN6bGVqN3Z4bmVtOSJ9.Fx0kmfg-7ll2Oi-7ZVJrfQ';
 
@@ -8,7 +10,7 @@ const _app = {
   map: {
     init: {
       container: 'map',
-      style: 'mapbox://styles/planemad/cjoescdh20cl62spey0zj3v19',      zoom: 3.7,
+      style: 'mapbox://styles/planemad/cjoescdh20cl62spey0zj3v19',
       bounds: [66, 7, 99, 37],
       maxBounds: [50, 5, 114, 40],
       pitchWithRotate: false,
@@ -20,7 +22,7 @@ const _app = {
 // Initialize GL map
 var map = new mapboxgl.Map(_app.map.init);
 
-map.on('load', function() {
+map.on('load', ()=>{
 
   addMapControls(map, mapboxgl.accessToken, {
     MapboxGeocoder: {
