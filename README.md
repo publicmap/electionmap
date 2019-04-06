@@ -29,7 +29,7 @@ Basemap showing constituency boundaries with street details designed in [Mapbox 
 
 ## Contributing
 
-Get the code and start the development server with love preview. Requires [node](https://nodejs.org/en/download/).
+Get the code and start the development server with live preview. Requires [node](https://nodejs.org/en/download/).
 ```
 git clone https://github.com/publicmap/electionmap.git
 cd electionmap
