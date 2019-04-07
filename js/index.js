@@ -37,7 +37,7 @@ map.on('load', ()=>{
 });
 
 map.on('click', (e) => {
-  showDataAtPoint(e.lngLat) 
+  showDataAtPoint(map, e.lngLat) 
   Markers.addMarker(map, e.lngLat);
 })
 

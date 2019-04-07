@@ -90,6 +90,35 @@ function getTilequeryURL (lngLat) {
   return `https://api.mapbox.com/v4/planemad.3picr4b8/tilequery/${lngLat.lng},${lngLat.lat}.json?limit=5&radius=0&dedupe=true&access_token=${mapboxgl.accessToken}`
 }
 },{}],5:[function(require,module,exports){
+module.exports = highlightConstituency
+
+function highlightConstituency(map, pc_id) {
+
+  // Define style properties for the highlighted constituency
+  var highlightProperties = {
+    'line-gap-width': [
+      "match",
+      ["get", "pc_id"],
+      [pc_id],
+      1,
+      0
+    ],
+    'line-color': [
+      "match",
+      ["get", "pc_id"],
+      [pc_id],
+      "hsl(62, 97%, 61%)",
+      "hsl(22, 98%, 92%)"
+    ]
+  }
+
+  // Set the style properties on the 'pc line border-highlight' layer in the map style
+  for ( var property in highlightProperties){
+    map.setPaintProperty('pc line border-highlight', property, highlightProperties[property])
+  }
+
+}
+},{}],6:[function(require,module,exports){
 'use strict';
 
 var addMapControls = require('./addMapControls')
@@ -129,12 +158,12 @@ map.on('load', ()=>{
 });
 
 map.on('click', (e) => {
-  showDataAtPoint(e.lngLat) 
+  showDataAtPoint(map, e.lngLat) 
   Markers.addMarker(map, e.lngLat);
 })
 
 
-},{"./add-marker":2,"./addMapControls":3,"./locate-user":6,"./show-data-at-point":8}],6:[function(require,module,exports){
+},{"./add-marker":2,"./addMapControls":3,"./locate-user":7,"./show-data-at-point":9}],7:[function(require,module,exports){
 var showDataAtPoint = require('./show-data-at-point')
 var Markers = require('./add-marker');
 var browserLocated = false
@@ -197,7 +226,7 @@ function locateUser (map) {
   }, 2000)
 }
 
-},{"./add-marker":2,"./show-data-at-point":8}],7:[function(require,module,exports){
+},{"./add-marker":2,"./show-data-at-point":9}],8:[function(require,module,exports){
 if (typeof Object.assign != 'function') {
   console.log('This polyfill for Object.assign command is being run in a browser that has an incompatibility issue. See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/assign#Browser_compatibility .');
   // Must be writable: true, enumerable: false, configurable: true
@@ -229,14 +258,15 @@ if (typeof Object.assign != 'function') {
   });
 }
 
-},{}],8:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 var getTilequeryURL = require('./get-tilequery-url')
 var ECILookup = require('./ECILookup')
+var highlightConstituency = require('./highlight-constituency')
 require('./object-assign-polyfill')
 
 module.exports = showDataAtPoint
 
-function showDataAtPoint (lngLat) {
+function showDataAtPoint (map, lngLat) {
   const tilequeryURL = getTilequeryURL(lngLat)
 
   // Add a loading spinner to the infoPanel while we fetch data
@@ -265,11 +295,15 @@ function showDataAtPoint (lngLat) {
       State: ${holder.st_name} (${ECI_code})<br>
       `;
       document.getElementById('infoPanel').classList.remove('loading');
-      document.getElementById('infoPanel').innerHTML = info
+      document.getElementById('infoPanel').innerHTML = info;
+
+      // Highlight constituency containing point
+      highlightConstituency(map, holder.pc_id);
+
     })
     .catch(err => {
       document.getElementById('infoPanel').classList.remove('loading');
       document.getElementById('infoPanel').innerHTML = `Error while fetching data for that location`;
     })
 }
-},{"./ECILookup":1,"./get-tilequery-url":4,"./object-assign-polyfill":7}]},{},[5]);
+},{"./ECILookup":1,"./get-tilequery-url":4,"./highlight-constituency":5,"./object-assign-polyfill":8}]},{},[6]);
