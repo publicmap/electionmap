@@ -3,8 +3,6 @@ var ECILookup = require('./ECILookup')
 var highlightConstituency = require('./highlight-constituency')
 require('./object-assign-polyfill')
 
-var getBbox = require('@turf/bbox')
-
 module.exports = showDataAtPoint
 
 function showDataAtPoint (map, lngLat) {
