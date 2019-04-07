@@ -49,9 +49,9 @@ function locateUser (map) {
         if (!browserLocated && !Markers.userHasClicked()) {
           map.flyTo({
             center: [body.longitude, body.latitude],
-            zoom: 6
+            zoom: 8
           });
-          showDataAtPoint({
+          showDataAtPoint(map,{
             lng: body.longitude,
             lat: body.latitude
           })
