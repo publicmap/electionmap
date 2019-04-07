@@ -12,21 +12,24 @@
   <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.53.1/mapbox-gl.js'></script>
   <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.53.1/mapbox-gl.css' rel='stylesheet' />
   <!-- Mapbox GL Geocoder -->
-  <script src='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v3.1.6/mapbox-gl-geocoder.min.js'></script>
-  <link rel='stylesheet' href='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v3.1.6/mapbox-gl-geocoder.css' type='text/css' />
+  <script src='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v3.1.6/mapbox-gl-geocoder.min.js'>
+  </script>
+  <link rel='stylesheet'
+    href='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v3.1.6/mapbox-gl-geocoder.css'
+    type='text/css' />
   <!-- Mapbox GL Extensions -->
   <script src='https://cdn.jsdelivr.net/gh/publicmap/mapbox-gl-tools@master/dist/addMapControls.js'></script>
   <link href='https://cdn.jsdelivr.net/gh/publicmap/mapbox-gl-tools@master/dist/addMapControls.css' rel='stylesheet'>
   <!-- jQuery -->
   <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
   <style>
-  .mapboxgl-ctrl-geocoder .geocoder-icon-search {
-    left: 5px;
-  }
+    .mapboxgl-ctrl-geocoder .geocoder-icon-search {
+      left: 5px;
+    }
 
-  .py6 {
-    margin-left: 6px;
-  }
+    .py6 {
+      margin-left: 6px;
+    }
   </style>
 </head>
 
@@ -50,17 +53,35 @@
             <div class='select-arrow'></div>
           </div> -->
           <div id='infoPanel' class='py6'>
-            <p>Click location to view constituency details</p></div>
-          <p class='mx6 txt-xs'><a class='link' href="https://github.com/publicmap/electionmap/"><svg style='display:inline' class='icon inline'><use xlink:href='#icon-github'/></svg> Source code</a> | <a class='link' href="https://github.com/publicmap/electionmap/issues">Submit feedback</a></p>
+            <p>Click location to view constituency details</p>
+          </div>
+          <p class='mx6 txt-xs'><a class='link' href="https://github.com/publicmap/electionmap/"><svg
+                style='display:inline' class='icon inline'>
+                <use xlink:href='#icon-github' /></svg> Source code</a> | <a class='link'
+              href="https://github.com/publicmap/electionmap/issues">Submit feedback</a></p>
         </div>
       </div>
-      
+
 
     </div>
-    </div>
+  </div>
 
-    <!-- App script -->
-    <script src='/js/dist/index.js'></script>
+  <!-- App script -->
+  <script src='/js/dist/index.js'></script>
+
+  <!-- Analytics tracking -->
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-67847650-3"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+
+    function gtag() {
+      dataLayer.push(arguments);
+    }
+    gtag('js', new Date());
+
+    gtag('config', 'UA-67847650-3');
+  </script>
 
 </body>
 
