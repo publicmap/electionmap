@@ -12,6 +12,9 @@ function addMarker(map, lngLat) {
   // Remove existing marker
   if (marker) {
     marker.remove();
+
+    // Quick hack so that it is easy to check whether user has clicked
+    marker = undefined;
   }
 
   // Add marker on user click
@@ -22,4 +25,8 @@ function addMarker(map, lngLat) {
 
 }
 
-module.exports = addMarker;
+function userHasClicked() {
+  return marker !== undefined;
+}
+
+module.exports = { addMarker, userHasClicked, };

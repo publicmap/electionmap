@@ -1,4 +1,5 @@
 var showDataAtPoint = require('./show-data-at-point')
+var Markers = require('./add-marker');
 var browserLocated = false
 
 module.exports = locateUser
@@ -10,6 +11,12 @@ function errorHandler (err) {
 function locateUser (map) {
 
   function showLocation (position) {
+
+    // User has an active location clicked and thus we don't need Browser Geolocation
+    if (Markers.userHasClicked()) {
+      return;
+    }
+
     browserLocated = true
     var lngLat = {
       lng: position.coords.longitude,
@@ -32,12 +39,14 @@ function locateUser (map) {
 
   // we fire the IP location request after 2 seconds
   // if the browser location has not worked until then
+  // if the user clicked, do not fire the request
+  //                      do not display if the user clicked in between
   setTimeout(() => {
-    if (browserLocated) return
+    if (browserLocated || Markers.userHasClicked()) return
     fetch('https://publicmap-freegeoip.herokuapp.com/json/')
       .then(response => response.json())
       .then(body => {
-        if (!browserLocated) {
+        if (!browserLocated && !Markers.userHasClicked()) {
           map.flyTo({
             center: [body.longitude, body.latitude],
             zoom: 6

@@ -3,7 +3,7 @@
 var addMapControls = require('./addMapControls')
 var showDataAtPoint = require('./show-data-at-point')
 var locateUser = require('./locate-user')
-var addMarker = require('./add-marker');
+var Markers = require('./add-marker');
 
 // Enable Mapbox services
 mapboxgl.accessToken = 'pk.eyJ1IjoicGxhbmVtYWQiLCJhIjoiY2p1M3JuNnRjMGZ2NzN6bGVqN3Z4bmVtOSJ9.Fx0kmfg-7ll2Oi-7ZVJrfQ';
@@ -38,6 +38,6 @@ map.on('load', ()=>{
 
 map.on('click', (e) => {
   showDataAtPoint(e.lngLat) 
-  addMarker(map, e.lngLat);
+  Markers.addMarker(map, e.lngLat);
 })
 
