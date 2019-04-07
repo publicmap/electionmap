@@ -1,10 +1,13 @@
 var getTilequeryURL = require('./get-tilequery-url')
 var ECILookup = require('./ECILookup')
+var highlightConstituency = require('./highlight-constituency')
 require('./object-assign-polyfill')
+
+var getBbox = require('@turf/bbox')
 
 module.exports = showDataAtPoint
 
-function showDataAtPoint (lngLat) {
+function showDataAtPoint (map, lngLat) {
   const tilequeryURL = getTilequeryURL(lngLat)
 
   // Add a loading spinner to the infoPanel while we fetch data
@@ -33,7 +36,11 @@ function showDataAtPoint (lngLat) {
       State: ${holder.st_name} (${ECI_code})<br>
       `;
       document.getElementById('infoPanel').classList.remove('loading');
-      document.getElementById('infoPanel').innerHTML = info
+      document.getElementById('infoPanel').innerHTML = info;
+
+      // Highlight constituency containing point
+      highlightConstituency(map, holder.pc_id);
+
     })
     .catch(err => {
       document.getElementById('infoPanel').classList.remove('loading');
