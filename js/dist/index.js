@@ -1,6 +1,40 @@
 (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 module.exports = {"1":{"ECI_code":"S09","state":"Jammu & Kashmir"},"2":{"ECI_code":"S08","state":"Himachal Pradesh"},"3":{"ECI_code":"S19","state":"Punjab"},"4":{"ECI_code":"U02","state":"Chandigarh"},"5":{"ECI_code":"S28","state":"Uttarakhand"},"6":{"ECI_code":"S07","state":"Haryana"},"7":{"ECI_code":"U05","state":"NCT OF Delhi"},"8":{"ECI_code":"S20","state":"Rajasthan"},"9":{"ECI_code":"S24","state":"Uttar Pradesh"},"10":{"ECI_code":"S04","state":"Bihar"},"11":{"ECI_code":"S21","state":"Sikkim"},"12":{"ECI_code":"S02","state":"Arunachal Pradesh"},"13":{"ECI_code":"S17","state":"Nagaland"},"14":{"ECI_code":"S14","state":"Manipur"},"15":{"ECI_code":"S16","state":"Mizoram"},"16":{"ECI_code":"S23","state":"Tripura"},"17":{"ECI_code":"S15","state":"Meghalaya"},"18":{"ECI_code":"S03","state":"Assam"},"19":{"ECI_code":"S25","state":"West Bengal"},"20":{"ECI_code":"S27","state":"Jharkhand"},"21":{"ECI_code":"S18","state":"Odisha"},"22":{"ECI_code":"S26","state":"Chhattisgarh"},"23":{"ECI_code":"S12","state":"Madhya Pradesh"},"24":{"ECI_code":"S06","state":"Gujarat"},"25":{"ECI_code":"U04","state":"Daman & Diu"},"26":{"ECI_code":"U03","state":"Dadra & Nagar Haveli"},"27":{"ECI_code":"S13","state":"Maharashtra"},"29":{"ECI_code":"S10","state":"Karnataka"},"30":{"ECI_code":"S05","state":"Goa"},"31":{"ECI_code":"U06","state":"Lakshadweep"},"32":{"ECI_code":"S11","state":"Kerala"},"33":{"ECI_code":"S22","state":"Tamil Nadu"},"34":{"ECI_code":"U07","state":"Puducherry"},"35":{"ECI_code":"U01","state":"Andaman & Nicobar Islands"},"36":{"ECI_code":"S29","state":"Telangana"},"37":{"ECI_code":"S01","state":"Andhra Pradesh"}};
 },{}],2:[function(require,module,exports){
+/**
+ * Mapbox Marker
+ * Add a marker upon user click
+ * Remove any existing marker before adding one
+ */
+
+// Track marker so that we can remove on the next user click
+var marker;
+
+function addMarker(map, lngLat) {
+
+  // Remove existing marker
+  if (marker) {
+    marker.remove();
+
+    // Quick hack so that it is easy to check whether user has clicked
+    marker = undefined;
+  }
+
+  // Add marker on user click
+  marker = new mapboxgl.Marker()
+    .setLngLat(lngLat)
+    .addTo(map)
+  ;
+
+}
+
+function userHasClicked() {
+  return marker !== undefined;
+}
+
+module.exports = { addMarker, userHasClicked, };
+
+},{}],3:[function(require,module,exports){
 /*
  * Mapbox GL Tools - Add Default Mapbox Controls
  * Adds a set of UI controls for Mapbox Maps
@@ -49,18 +83,19 @@ function addMapControls(map, accessToken, options) {
 
 module.exports = addMapControls;
 
-},{}],3:[function(require,module,exports){
+},{}],4:[function(require,module,exports){
 module.exports = getTilequeryURL
 
 function getTilequeryURL (lngLat) {
   return `https://api.mapbox.com/v4/planemad.3picr4b8/tilequery/${lngLat.lng},${lngLat.lat}.json?limit=5&radius=0&dedupe=true&access_token=${mapboxgl.accessToken}`
 }
-},{}],4:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 'use strict';
 
 var addMapControls = require('./addMapControls')
 var showDataAtPoint = require('./show-data-at-point')
 var locateUser = require('./locate-user')
+var Markers = require('./add-marker');
 
 // Enable Mapbox services
 mapboxgl.accessToken = 'pk.eyJ1IjoicGxhbmVtYWQiLCJhIjoiY2p1M3JuNnRjMGZ2NzN6bGVqN3Z4bmVtOSJ9.Fx0kmfg-7ll2Oi-7ZVJrfQ';
@@ -95,11 +130,13 @@ map.on('load', ()=>{
 
 map.on('click', (e) => {
   showDataAtPoint(e.lngLat) 
+  Markers.addMarker(map, e.lngLat);
 })
 
 
-},{"./addMapControls":2,"./locate-user":5,"./show-data-at-point":7}],5:[function(require,module,exports){
+},{"./add-marker":2,"./addMapControls":3,"./locate-user":6,"./show-data-at-point":8}],6:[function(require,module,exports){
 var showDataAtPoint = require('./show-data-at-point')
+var Markers = require('./add-marker');
 var browserLocated = false
 
 module.exports = locateUser
@@ -111,6 +148,12 @@ function errorHandler (err) {
 function locateUser (map) {
 
   function showLocation (position) {
+
+    // User has an active location clicked and thus we don't need Browser Geolocation
+    if (Markers.userHasClicked()) {
+      return;
+    }
+
     browserLocated = true
     var lngLat = {
       lng: position.coords.longitude,
@@ -133,12 +176,14 @@ function locateUser (map) {
 
   // we fire the IP location request after 2 seconds
   // if the browser location has not worked until then
+  // if the user clicked, do not fire the request
+  //                      do not display if the user clicked in between
   setTimeout(() => {
-    if (browserLocated) return
+    if (browserLocated || Markers.userHasClicked()) return
     fetch('https://publicmap-freegeoip.herokuapp.com/json/')
       .then(response => response.json())
       .then(body => {
-        if (!browserLocated) {
+        if (!browserLocated && !Markers.userHasClicked()) {
           map.flyTo({
             center: [body.longitude, body.latitude],
             zoom: 6
@@ -152,7 +197,7 @@ function locateUser (map) {
   }, 2000)
 }
 
-},{"./show-data-at-point":7}],6:[function(require,module,exports){
+},{"./add-marker":2,"./show-data-at-point":8}],7:[function(require,module,exports){
 if (typeof Object.assign != 'function') {
   console.log('This polyfill for Object.assign command is being run in a browser that has an incompatibility issue. See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/assign#Browser_compatibility .');
   // Must be writable: true, enumerable: false, configurable: true
@@ -184,7 +229,7 @@ if (typeof Object.assign != 'function') {
   });
 }
 
-},{}],7:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 var getTilequeryURL = require('./get-tilequery-url')
 var ECILookup = require('./ECILookup')
 require('./object-assign-polyfill')
@@ -227,4 +272,4 @@ function showDataAtPoint (lngLat) {
       document.getElementById('infoPanel').innerHTML = `Error while fetching data for that location`;
     })
 }
-},{"./ECILookup":1,"./get-tilequery-url":3,"./object-assign-polyfill":6}]},{},[4]);
+},{"./ECILookup":1,"./get-tilequery-url":4,"./object-assign-polyfill":7}]},{},[5]);

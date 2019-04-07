@@ -4,6 +4,7 @@ Websites with useful information for voters pertaining to the 2019 General Elect
 
 **Official resources - [ECI](https://eci.gov.in/)**
 
+- [Polling Station Locations](http://psleci.nic.in/Default.aspx)
 - [National Voters Service Portal](https://www.nvsp.in/)
 - [Systematic Voters’ Education and Electoral Participation Portal](http://ecisveep.nic.in/)
 - [Candidate Affidavits](https://affidavit.eci.gov.in/)
