@@ -104,24 +104,25 @@ var browserLocated = false
 
 module.exports = locateUser
 
-function showLocation (position) {
-  browserLocated = true
-  var lngLat = {
-    lng: position.coords.longitude,
-    lat: position.coords.latitude
-  }
-  map.flyTo({
-    center: [lngLat.lng, lngLat.lat],
-    zoom: 8
-  })
-  showDataAtPoint(lngLat)
-}
-
 function errorHandler (err) {
   console.log('error getting user location', err)
 }
 
 function locateUser (map) {
+
+  function showLocation (position) {
+    browserLocated = true
+    var lngLat = {
+      lng: position.coords.longitude,
+      lat: position.coords.latitude
+    }
+    map.flyTo({
+      center: [lngLat.lng, lngLat.lat],
+      zoom: 8
+    })
+    showDataAtPoint(lngLat)
+  }
+    
   if(navigator.geolocation) {         
     // timeout at 60000 milliseconds (60 seconds)
     var options = {timeout:60000}
