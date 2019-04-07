@@ -20,13 +20,13 @@
   <!-- jQuery -->
   <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
   <style>
-  .mapboxgl-ctrl-geocoder .geocoder-icon-search {
-    left: 5px;
-  }
-
-  .py6 {
-    margin-left: 6px;
-  }
+    .mapboxgl-ctrl-geocoder .geocoder-icon-search {
+      left: 5px;
+    }
+    
+    .py6 {
+      margin-left: 6px;
+    }
   </style>
 </head>
 
@@ -37,31 +37,48 @@
     <div class='viewport-twothirds viewport-full-ml relative'>
       <div id='map' class='absolute top left right bottom'></div>
     </div>
-
+    
     <div class='absolute top-ml left z1 w-full w360-ml py12-ml px12-ml'>
       <div class='viewport-third h-auto-ml hmax-full bg-white round-ml shadow-darken5 scroll-auto'>
         <div class='py12 px12 scroll-auto'>
           <h2 class='txt-l txt-bold mx6 my6'>Election Map of India</h2>
           <!-- <div class='select-container hide'>
             <select id='select-map' class='select'>
-                            <option value='constituencies'>Electoral Constituencies</option>
-                            <option value='election'>Election date 2019</option>
-                        </select>
+              <option value='constituencies'>Electoral Constituencies</option>
+              <option value='election'>Election date 2019</option>
+            </select>
             <div class='select-arrow'></div>
           </div> -->
           <div id='infoPanel' class='py6'>
-            <p>Click location to view constituency details</p></div>
-          <p class='mx6 txt-xs'><a class='link' href="https://github.com/publicmap/electionmap/"><svg style='display:inline' class='icon inline'><use xlink:href='#icon-github'/></svg> Source code</a> | <a class='link' href="https://github.com/publicmap/electionmap/issues">Submit feedback</a></p>
+            <p>Click location to view constituency details</p>
+          </div>
+          <p class='mx6 txt-xs'><a class='link' href="https://github.com/publicmap/electionmap/"><svg
+            style='display:inline' class='icon inline'>
+            <use xlink:href='#icon-github' /></svg> Source code</a> | <a class='link'
+            href="https://github.com/publicmap/electionmap/issues">Submit feedback</a></p>
+          </div>
         </div>
+        
+        
       </div>
-      
-
     </div>
-    </div>
-
+    
     <!-- App script -->
     <script src='/js/dist/index.js'></script>
-
-</body>
-
-</html>
+    
+    <!-- Analytics tracking -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-67847650-3"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag('js', new Date());
+      
+      gtag('config', 'UA-67847650-3');
+    </script>
+    
+  </body>
+  
+  </html>
