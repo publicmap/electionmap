@@ -20,12 +20,20 @@
   <!-- jQuery -->
   <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
   <style>
+  body, input, textarea {
+    line-height: 20px;
+  }  
   .mapboxgl-ctrl-geocoder .geocoder-icon-search {
     left: 5px;
   }
 
   .py6 {
     margin-left: 6px;
+  }
+
+  .viewport-twothirds {
+    height: 60vh !important;
+    overflow: auto;
   }
   </style>
 </head>
@@ -41,7 +49,7 @@
     <div class='absolute top-ml left z1 w-full w360-ml py12-ml px12-ml'>
       <div class='viewport-third h-auto-ml hmax-full bg-white round-ml shadow-darken5 scroll-auto'>
         <div class='py12 px12 scroll-auto'>
-          <h2 class='txt-l txt-bold mx6 my6'>Election Map of India</h2>
+          <h2 class='txt-l txt-bold mx6'>Election Map of India</h2>
           <!-- <div class='select-container hide'>
             <select id='select-map' class='select'>
                             <option value='constituencies'>Electoral Constituencies</option>
@@ -51,7 +59,9 @@
           </div> -->
           <div id='infoPanel' class='py6'>
             <p>Click location to view constituency details</p></div>
-          <p class='mx6 txt-xs'><a class='link' href="https://github.com/publicmap/electionmap/"><svg style='display:inline' class='icon inline'><use xlink:href='#icon-github'/></svg> Source code</a> | <a class='link' href="https://github.com/publicmap/electionmap/issues">Submit feedback</a></p>
+          <p class='mx6 txt-xs'><a class='link' href="https://github.com/publicmap/electionmap/">
+            <svg style='display:inline-block; vertical-align: middle;' class='icon'><use xlink:href='#icon-github'/></svg>
+            <span>Source code</span></a> | <a class='link' href="https://github.com/publicmap/electionmap/issues">Submit feedback</a></p>
         </div>
       </div>
       
