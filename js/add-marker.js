@@ -23,6 +23,8 @@ function addMarker(map, lngLat) {
     .addTo(map)
   ;
 
+  map.flyTo({center: [lngLat.lng, lngLat.lat]})
+
 }
 
 function userHasClicked() {
