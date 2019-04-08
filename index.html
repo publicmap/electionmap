@@ -12,38 +12,41 @@
   <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.53.1/mapbox-gl.js'></script>
   <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.53.1/mapbox-gl.css' rel='stylesheet' />
   <!-- Mapbox GL Geocoder -->
-  <script src='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v3.1.6/mapbox-gl-geocoder.min.js'></script>
-  <link rel='stylesheet' href='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v3.1.6/mapbox-gl-geocoder.css' type='text/css' />
+  <script src='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v3.1.6/mapbox-gl-geocoder.min.js'>
+  </script>
+  <link rel='stylesheet'
+    href='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v3.1.6/mapbox-gl-geocoder.css'
+    type='text/css' />
   <!-- Mapbox GL Extensions -->
   <script src='https://cdn.jsdelivr.net/gh/publicmap/mapbox-gl-tools@master/dist/addMapControls.js'></script>
   <link href='https://cdn.jsdelivr.net/gh/publicmap/mapbox-gl-tools@master/dist/addMapControls.css' rel='stylesheet'>
   <!-- jQuery -->
   <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
   <style>
-
-  body, input, textarea {
-    line-height: 20px;
-  }  
-  
-  .mapboxgl-ctrl-geocoder .geocoder-icon-search {
-    left: 5px;
-  }
-
-  .py6 {
-    margin-left: 6px;
-  }
-
-  .viewport-twothirds {
-    height: 60vh !important;
-    overflow: auto;
-  }
-
-  @media screen and (min-width: 800px) {
-    .viewport-full-ml {
-      height: 100vh!important;
+    body,
+    input,
+    textarea {
+      line-height: 20px;
     }
-  }
 
+    .mapboxgl-ctrl-geocoder .geocoder-icon-search {
+      left: 5px;
+    }
+
+    .py6 {
+      margin-left: 6px;
+    }
+
+    .viewport-twothirds {
+      height: 60vh !important;
+      overflow: auto;
+    }
+
+    @media screen and (min-width: 800px) {
+      .viewport-full-ml {
+        height: 100vh !important;
+      }
+    }
   </style>
 </head>
 
@@ -54,11 +57,17 @@
     <div class='viewport-twothirds viewport-full-ml relative'>
       <div id='map' class='absolute top left right bottom'></div>
     </div>
-    
+
+
     <div class='absolute top-ml left z1 w-full w360-ml py12-ml px12-ml'>
       <div class='viewport-third h-auto-ml hmax-full bg-white round-ml shadow-darken5 scroll-auto'>
         <div class='py12 px12 scroll-auto'>
-          <h2 class='txt-l txt-bold mx6'>Election Map of India 2019</h2>
+          <h2 class='txt-l txt-bold mx6'>Election Map of India 2019 <a class='link' href="#"
+            onclick="document.getElementById('about-modal').style.display='block';">
+            <svg style='display:inline-block; vertical-align: middle;' class='icon'>
+              <use xlink:href='#icon-info' /></svg>
+            </a>
+          </h2>
           <!-- <div class='select-container hide'>
             <select id='select-map' class='select'>
               <option value='constituencies'>Electoral Constituencies</option>
@@ -67,32 +76,107 @@
             <div class='select-arrow'></div>
           </div> -->
           <div id='infoPanel' class='py6'>
-            <p>Click location to view constituency details</p></div>
-          <p class='mx6 txt-xs'><a class='link' href="https://github.com/publicmap/electionmap/">
-            <svg style='display:inline-block; vertical-align: middle;' class='icon'><use xlink:href='#icon-github'/></svg>
-            <span>Source code</span></a> | <a class='link' href="https://github.com/publicmap/electionmap/issues">Submit feedback</a></p>
+            <p>Click location to view constituency details</p>
+          </div>
+          <p class='mx6 txt-xs'>
+            <a class='link' href="https://github.com/publicmap/electionmap/">
+              <svg style='display:inline-block; vertical-align: middle;' class='icon'>
+                <use xlink:href='#icon-heart' /></svg>
+              <span>Open source</span></a> |
+            <a class='link' href="https://github.com/publicmap/electionmap/issues">Submit feedback</a></p>
         </div>
-        
-        
       </div>
+
+      <div id='about-modal' class='fixed top right bottom left scroll-auto bg-darken10' style='display:none'>
+        <div class='flex-parent flex-parent--center-main pt36'>
+          <div class='flex-child bg-white round relative w600'>
+            <button class='absolute top right px12 py12'
+              onclick="document.getElementById('about-modal').style.display='none';">
+              <svg class='icon link color-darken50'>
+                <use xlink:href='#icon-close'></use>
+              </svg>
+            </button>
+            <div class='px24 py24 prose'>
+              <h3 class='mb12'>About ElectionMap.in</h3>
+              <a class="twitter-share-button"
+  href="https://twitter.com/intent/tweet?text=Indian Election Map Tool by @datameet">
+Tweet</a>
+<div class="fb-share-button" data-href="https://electionmap.in" data-layout="button_count" data-size="small" style='top:-4px'><a target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Felectionmap.in%2F&amp;src=sdkpreparse" class="fb-xfbml-parse-ignore">Share</a></div>
+              <p class='txt-m'>
+                ElectionMap is an open source citizen awareness tool built by the <a
+                  href="http://datameet.org/">Datameet - Indian Open Data Community</a> to provide the 900 million
+                eligible voters in India an easy way of finding voting information relating to the upcoming <a
+                  href="https://en.wikipedia.org/wiki/2019_Indian_general_election">2019 General Elections</a> which are
+                to be held from 11 April to 19 May 2019.
+              </p>
+
+              <p>
+                The tool uses available open data of electoral boundaries to locate the parliamentary constituency and
+                provides polling dates published by the Election Commission of India and links to the affadavits of
+                contesting candidates. 
+              </p>
+
+              <h5 class='mb12'>How to use</h5>
+              
+              <p>The map will automatically fetch your location and highlight the parliamentary constituency based on your location.</p>
+              <img src='/img/how-to-use-loading.gif'>
+
+              <p>If this is incorrect, you can use the search button on the right or manually click on the map to select another location.</p>
+              <img src='/img/how-to-use-search.gif'>
+
+              <h5 class='mb12'>Resources</h5>
+              <p>For more voting resources please see <a
+                href='https://github.com/publicmap/electionmap'>list of useful links</a>
+            </p>
+              <h4 class='mb12'>Party map of 2014 Elections</h3>
+                <a href="https://commons.wikimedia.org/wiki/File:Indische_Parlamentswahl_2014_Parteien.svg"><img
+                  src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e6/Indische_Parlamentswahl_2014_Parteien.svg/831px-Indische_Parlamentswahl_2014_Parteien.svg.png"></a>
+ 
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
-    
+
+
     <!-- App script -->
     <script src='/js/dist/index.js'></script>
-    
+
     <!-- Analytics tracking -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=UA-67847650-3"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
-      
+
       function gtag() {
         dataLayer.push(arguments);
       }
       gtag('js', new Date());
-      
+
       gtag('config', 'UA-67847650-3');
     </script>
-    
-  </body>
+
+<!-- FB widget -->
+<div id="fb-root"></div>
+<script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v3.2"></script>
+<!-- Twitter widget -->
+<script>window.twttr = (function(d, s, id) {
+    var js, fjs = d.getElementsByTagName(s)[0],
+      t = window.twttr || {};
+    if (d.getElementById(id)) return t;
+    js = d.createElement(s);
+    js.id = id;
+    js.src = "https://platform.twitter.com/widgets.js";
+    fjs.parentNode.insertBefore(js, fjs);
   
-  </html>
+    t._e = [];
+    t.ready = function(f) {
+      t._e.push(f);
+    };
+  
+    return t;
+  }(document, "script", "twitter-wjs"));</script>
+
+</body>
+
+</html>

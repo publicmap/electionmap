@@ -85,7 +85,7 @@ function addMapControls(map, accessToken, options) {
       accessToken: accessToken,
 
       // limit results 
-      country: options.MapboxGeocoder.country,
+      countries: options.MapboxGeocoder.countries,
 
       // further limit results to the geographic bounds representing the region
       bbox: options.MapboxGeocoder.bbox
@@ -163,7 +163,7 @@ map.on('load', () => {
   addMapControls(map, mapboxgl.accessToken, {
     MapboxGeocoder: {
       position: 'top-right',
-      country: 'in'
+      countries: 'in'
     }
   });
   map.touchZoomRotate.disableRotation();
@@ -323,8 +323,8 @@ function showDataAtPoint (map, e) {
     .then(response => response.json())
     .then(data => {
       // merge the damn properies
-      console.log(data);
       var holder = Object.assign({}, data.features[0].properties, data.features[1].properties);
+      console.log('Constituency details API:',holder);
 
       var ECI_code = ECILookup[String(holder.st_code)]['ECI_code'];
 
