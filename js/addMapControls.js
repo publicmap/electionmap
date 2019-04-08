@@ -14,7 +14,7 @@ function addMapControls(map, accessToken, options) {
       accessToken: accessToken,
 
       // limit results 
-      country: options.MapboxGeocoder.country,
+      countries: options.MapboxGeocoder.countries,
 
       // further limit results to the geographic bounds representing the region
       bbox: options.MapboxGeocoder.bbox

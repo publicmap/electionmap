@@ -37,7 +37,7 @@ map.on('load', () => {
   addMapControls(map, mapboxgl.accessToken, {
     MapboxGeocoder: {
       position: 'top-right',
-      country: 'in'
+      countries: 'in'
     }
   });
   map.touchZoomRotate.disableRotation();
