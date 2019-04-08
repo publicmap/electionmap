@@ -3,7 +3,7 @@
 var addMapControls = require('./addMapControls')
 var showDataAtPoint = require('./show-data-at-point')
 var locateUser = require('./locate-user')
-var Markers = require('./add-marker');
+var addStyleLayers = require('./add-style-layers')
 
 // Enable Mapbox services
 mapboxgl.accessToken = 'pk.eyJ1IjoicGxhbmVtYWQiLCJhIjoiY2p1M3JuNnRjMGZ2NzN6bGVqN3Z4bmVtOSJ9.Fx0kmfg-7ll2Oi-7ZVJrfQ';
@@ -26,18 +26,31 @@ const _app = {
 var map = new mapboxgl.Map(_app.map.init);
 
 map.on('load', ()=>{
-  locateUser(map)
+
+  // Setup map layers for styling
+  addStyleLayers(map);
+
+  // Find user location
+  locateUser(map);
+
+  // Add map UI controls
   addMapControls(map, mapboxgl.accessToken, {
     MapboxGeocoder: {
       position:'top-right',
-      country: 'in',
-      bbox: _app.map.bounds
+      country: 'in'
     }
   });
+  map.touchZoomRotate.disableRotation();
+
+  //Define map interactivity
+  map.on('click', 'pc fill mask', (e) => {
+
+    // Show constituency details at location
+    showDataAtPoint(map, e) 
+
+  })
+
 });
 
-map.on('click', (e) => {
-  showDataAtPoint(map, e.lngLat) 
-  Markers.addMarker(map, e.lngLat);
-})
+
 

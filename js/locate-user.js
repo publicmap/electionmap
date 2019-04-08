@@ -1,5 +1,6 @@
 var showDataAtPoint = require('./show-data-at-point')
 var Markers = require('./add-marker');
+var pointInBBOX = require
 var browserLocated = false
 
 module.exports = locateUser
@@ -22,11 +23,9 @@ function locateUser (map) {
       lng: position.coords.longitude,
       lat: position.coords.latitude
     }
-    map.flyTo({
-      center: [lngLat.lng, lngLat.lat],
-      zoom: 8
-    })
-    showDataAtPoint(lngLat)
+
+    showDataAtPoint(map, {lngLat : lngLat})
+
   }
     
   if(navigator.geolocation) {         
@@ -47,14 +46,21 @@ function locateUser (map) {
       .then(response => response.json())
       .then(body => {
         if (!browserLocated && !Markers.userHasClicked()) {
+
+          showDataAtPoint(map,{
+            lngLat: 
+            {lng: body.longitude,
+            lat: body.latitude}
+          })
+
+          var getConstituency = map.queryRenderedFeatures([body.longitude,body.latitude],{layers:['pc line border','pc fill mask', 'pc line border-highlight']});
+          console.log(getConstituency);
+
           map.flyTo({
             center: [body.longitude, body.latitude],
-            zoom: 8
+            zoom: 9
           });
-          showDataAtPoint(map,{
-            lng: body.longitude,
-            lat: body.latitude
-          })
+          
         }
       })
   }, 2000)

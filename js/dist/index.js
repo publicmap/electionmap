@@ -10,7 +10,7 @@ module.exports = {"1":{"ECI_code":"S09","state":"Jammu & Kashmir"},"2":{"ECI_cod
 // Track marker so that we can remove on the next user click
 var marker;
 
-function addMarker(map, lngLat) {
+function addMarker(map, e) {
 
   // Remove existing marker
   if (marker) {
@@ -22,9 +22,11 @@ function addMarker(map, lngLat) {
 
   // Add marker on user click
   marker = new mapboxgl.Marker()
-    .setLngLat(lngLat)
+    .setLngLat(e.lngLat)
     .addTo(map)
   ;
+
+  map.flyTo({center: [e.lngLat.lng,e.lngLat.lat]})
 
 }
 
@@ -35,6 +37,39 @@ function userHasClicked() {
 module.exports = { addMarker, userHasClicked, };
 
 },{}],3:[function(require,module,exports){
+module.exports = addStyleLayers
+
+// Add styling to map layers to show active and hover constituencies
+
+function addStyleLayers (map) {
+
+
+  map.setPaintProperty('pc line border-highlight', 'line-color',  [
+    "match", ["feature-state", "state"], 'active',
+    "hsl(62, 97%, 61%)",
+    "match", ["feature-state", "state"], 'hover',
+    "hsl(62, 97%, 61%)",
+    "hsl(22, 98%, 92%)"
+  ])
+
+  map.setPaintProperty('pc line border-highlight', 'line-gap-width',  [
+    "match", ["feature-state", "state"], 'active',
+    1,
+    "match", ["feature-state", "state"], 'hover',
+    0,
+    0
+  ])
+
+  map.setPaintProperty('pc fill mask', 'fill-opacity',  [
+    "match", ["feature-state", "state"], 'active',
+    0,
+    "match", ["feature-state", "state"], 'hover',
+    0.2,
+    0.6
+  ])
+
+}
+},{}],4:[function(require,module,exports){
 /*
  * Mapbox GL Tools - Add Default Mapbox Controls
  * Adds a set of UI controls for Mapbox Maps
@@ -83,40 +118,11 @@ function addMapControls(map, accessToken, options) {
 
 module.exports = addMapControls;
 
-},{}],4:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 module.exports = getTilequeryURL
 
 function getTilequeryURL (lngLat) {
   return `https://api.mapbox.com/v4/planemad.3picr4b8/tilequery/${lngLat.lng},${lngLat.lat}.json?limit=5&radius=0&dedupe=true&access_token=${mapboxgl.accessToken}`
-}
-},{}],5:[function(require,module,exports){
-module.exports = highlightConstituency
-
-function highlightConstituency(map, pc_id) {
-
-  // Define style properties for the highlighted constituency
-  var highlightProperties = {
-    'line-gap-width': [
-      "match",
-      ["get", "pc_id"],
-      [pc_id],
-      1,
-      0
-    ],
-    'line-color': [
-      "match",
-      ["get", "pc_id"],
-      [pc_id],
-      "hsl(62, 97%, 61%)",
-      "hsl(22, 98%, 92%)"
-    ]
-  }
-
-  // Set the style properties on the 'pc line border-highlight' layer in the map style
-  for ( var property in highlightProperties){
-    map.setPaintProperty('pc line border-highlight', property, highlightProperties[property])
-  }
-
 }
 },{}],6:[function(require,module,exports){
 'use strict';
@@ -124,7 +130,7 @@ function highlightConstituency(map, pc_id) {
 var addMapControls = require('./addMapControls')
 var showDataAtPoint = require('./show-data-at-point')
 var locateUser = require('./locate-user')
-var Markers = require('./add-marker');
+var addStyleLayers = require('./add-style-layers')
 
 // Enable Mapbox services
 mapboxgl.accessToken = 'pk.eyJ1IjoicGxhbmVtYWQiLCJhIjoiY2p1M3JuNnRjMGZ2NzN6bGVqN3Z4bmVtOSJ9.Fx0kmfg-7ll2Oi-7ZVJrfQ';
@@ -147,25 +153,39 @@ const _app = {
 var map = new mapboxgl.Map(_app.map.init);
 
 map.on('load', ()=>{
-  locateUser(map)
+
+  // Setup map layers for styling
+  addStyleLayers(map);
+
+  // Find user location
+  locateUser(map);
+
+  // Add map UI controls
   addMapControls(map, mapboxgl.accessToken, {
     MapboxGeocoder: {
       position:'top-right',
-      country: 'in',
-      bbox: _app.map.bounds
+      country: 'in'
     }
   });
+  map.touchZoomRotate.disableRotation();
+
+  //Define map interactivity
+  map.on('click', 'pc fill mask', (e) => {
+
+    // Show constituency details at location
+    showDataAtPoint(map, e) 
+
+  })
+
 });
 
-map.on('click', (e) => {
-  showDataAtPoint(map, e.lngLat) 
-  Markers.addMarker(map, e.lngLat);
-})
 
 
-},{"./add-marker":2,"./addMapControls":3,"./locate-user":7,"./show-data-at-point":9}],7:[function(require,module,exports){
+
+},{"./add-style-layers":3,"./addMapControls":4,"./locate-user":7,"./show-data-at-point":9}],7:[function(require,module,exports){
 var showDataAtPoint = require('./show-data-at-point')
 var Markers = require('./add-marker');
+var pointInBBOX = require
 var browserLocated = false
 
 module.exports = locateUser
@@ -188,11 +208,9 @@ function locateUser (map) {
       lng: position.coords.longitude,
       lat: position.coords.latitude
     }
-    map.flyTo({
-      center: [lngLat.lng, lngLat.lat],
-      zoom: 8
-    })
-    showDataAtPoint(lngLat)
+
+    showDataAtPoint(map, {lngLat : lngLat})
+
   }
     
   if(navigator.geolocation) {         
@@ -213,14 +231,21 @@ function locateUser (map) {
       .then(response => response.json())
       .then(body => {
         if (!browserLocated && !Markers.userHasClicked()) {
+
+          showDataAtPoint(map,{
+            lngLat: 
+            {lng: body.longitude,
+            lat: body.latitude}
+          })
+
+          var getConstituency = map.queryRenderedFeatures([body.longitude,body.latitude],{layers:['pc line border','pc fill mask', 'pc line border-highlight']});
+          console.log(getConstituency);
+
           map.flyTo({
             center: [body.longitude, body.latitude],
-            zoom: 8
+            zoom: 9
           });
-          showDataAtPoint(map,{
-            lng: body.longitude,
-            lat: body.latitude
-          })
+          
         }
       })
   }, 2000)
@@ -261,17 +286,30 @@ if (typeof Object.assign != 'function') {
 },{}],9:[function(require,module,exports){
 var getTilequeryURL = require('./get-tilequery-url')
 var ECILookup = require('./ECILookup')
-var highlightConstituency = require('./highlight-constituency')
+var Markers = require('./add-marker');
 require('./object-assign-polyfill')
 
 module.exports = showDataAtPoint
 
-function showDataAtPoint (map, lngLat) {
-  const tilequeryURL = getTilequeryURL(lngLat)
+function showDataAtPoint (map, e) {
+
+  // Add marker at clicked location
+  Markers.addMarker(map, e);
+
+  var getConstituency = map.queryRenderedFeatures([e.lngLat.lng,e.lngLat.lat],{layers:['pc line border','pc fill mask', 'pc line border-highlight']});
+  console.log(getConstituency);
+  
+  const tilequeryURL = getTilequeryURL(e.lngLat)
+
+  map.flyTo({
+    center: [e.lngLat.lng, e.lngLat.lat]
+  })
 
   // Add a loading spinner to the infoPanel while we fetch data
   document.getElementById('infoPanel').innerHTML = '';
   document.getElementById('infoPanel').classList.add('loading','loading--s');
+
+  
 
   // use fetch to fetch data - this maintains consistency with using fetch elsewhere
   // if we have browser considerations where `fetch` does not work,
@@ -280,7 +318,10 @@ function showDataAtPoint (map, lngLat) {
     .then(response => response.json())
     .then(data => {
       // merge the damn properies
+      console.log(data);
       var holder = Object.assign({}, data.features[0].properties, data.features[1].properties);
+
+
 
       var ECI_code = ECILookup[String(holder.st_code)]['ECI_code'];
 
@@ -297,8 +338,18 @@ function showDataAtPoint (map, lngLat) {
       document.getElementById('infoPanel').classList.remove('loading');
       document.getElementById('infoPanel').innerHTML = info;
 
-      // Highlight constituency containing point
-      highlightConstituency(map, holder.pc_id);
+
+      map.removeFeatureState({
+        source: 'mapbox://planemad.3picr4b8',
+        sourceLayer: 'pc'
+      });
+      map.setFeatureState({
+        source: 'mapbox://planemad.3picr4b8',
+        sourceLayer: 'pc',
+        id: data.features[1].id
+      }, {
+        state: 'active'
+      });
 
     })
     .catch(err => {
@@ -306,4 +357,4 @@ function showDataAtPoint (map, lngLat) {
       document.getElementById('infoPanel').innerHTML = `Error while fetching data for that location`;
     })
 }
-},{"./ECILookup":1,"./get-tilequery-url":4,"./highlight-constituency":5,"./object-assign-polyfill":8}]},{},[6]);
+},{"./ECILookup":1,"./add-marker":2,"./get-tilequery-url":5,"./object-assign-polyfill":8}]},{},[6]);

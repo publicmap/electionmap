@@ -1,16 +1,29 @@
 var getTilequeryURL = require('./get-tilequery-url')
 var ECILookup = require('./ECILookup')
-var highlightConstituency = require('./highlight-constituency')
+var Markers = require('./add-marker');
 require('./object-assign-polyfill')
 
 module.exports = showDataAtPoint
 
-function showDataAtPoint (map, lngLat) {
-  const tilequeryURL = getTilequeryURL(lngLat)
+function showDataAtPoint (map, e) {
+
+  // Add marker at clicked location
+  Markers.addMarker(map, e);
+
+  var getConstituency = map.queryRenderedFeatures([e.lngLat.lng,e.lngLat.lat],{layers:['pc line border','pc fill mask', 'pc line border-highlight']});
+  console.log(getConstituency);
+  
+  const tilequeryURL = getTilequeryURL(e.lngLat)
+
+  map.flyTo({
+    center: [e.lngLat.lng, e.lngLat.lat]
+  })
 
   // Add a loading spinner to the infoPanel while we fetch data
   document.getElementById('infoPanel').innerHTML = '';
   document.getElementById('infoPanel').classList.add('loading','loading--s');
+
+  
 
   // use fetch to fetch data - this maintains consistency with using fetch elsewhere
   // if we have browser considerations where `fetch` does not work,
@@ -19,7 +32,10 @@ function showDataAtPoint (map, lngLat) {
     .then(response => response.json())
     .then(data => {
       // merge the damn properies
+      console.log(data);
       var holder = Object.assign({}, data.features[0].properties, data.features[1].properties);
+
+
 
       var ECI_code = ECILookup[String(holder.st_code)]['ECI_code'];
 
@@ -36,8 +52,18 @@ function showDataAtPoint (map, lngLat) {
       document.getElementById('infoPanel').classList.remove('loading');
       document.getElementById('infoPanel').innerHTML = info;
 
-      // Highlight constituency containing point
-      highlightConstituency(map, holder.pc_id);
+
+      map.removeFeatureState({
+        source: 'mapbox://planemad.3picr4b8',
+        sourceLayer: 'pc'
+      });
+      map.setFeatureState({
+        source: 'mapbox://planemad.3picr4b8',
+        sourceLayer: 'pc',
+        id: data.features[1].id
+      }, {
+        state: 'active'
+      });
 
     })
     .catch(err => {
