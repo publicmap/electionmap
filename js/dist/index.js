@@ -181,7 +181,6 @@ map.on('load', () => {
 },{"./add-style-layers":3,"./addMapControls":4,"./locate-user":7,"./show-data-at-point":9}],7:[function(require,module,exports){
 var showDataAtPoint = require('./show-data-at-point')
 var Markers = require('./add-marker');
-var pointInBBOX = require
 var browserLocated = false
 
 module.exports = locateUser

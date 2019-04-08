@@ -1,6 +1,5 @@
 var showDataAtPoint = require('./show-data-at-point')
 var Markers = require('./add-marker');
-var pointInBBOX = require
 var browserLocated = false
 
 module.exports = locateUser
