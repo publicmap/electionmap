@@ -4,13 +4,13 @@ var browserLocated = false
 
 module.exports = locateUser
 
-function errorHandler (err) {
+function errorHandler(err) {
   console.log('error getting user location', err)
 }
 
-function locateUser (map) {
+function locateUser(map) {
 
-  function showLocation (position) {
+  function showLocation(position) {
 
     // User has an active location clicked and thus we don't need Browser Geolocation
     if (Markers.userHasClicked()) {
@@ -18,18 +18,28 @@ function locateUser (map) {
     }
 
     browserLocated = true
+
     var lngLat = {
       lng: position.coords.longitude,
       lat: position.coords.latitude
     }
 
-    showDataAtPoint(map, {lngLat : lngLat})
+    // Abort if user coordinate is outside India
+    if (!(lngLat.lng > 63 && lngLat.lng < 97 && lngLat.lat > 7 && lngLat.lat < 36)) {
+      return
+    }
+
+    showDataAtPoint(map, {
+      lngLat: lngLat
+    })
 
   }
-    
-  if(navigator.geolocation) {         
+
+  if (navigator.geolocation) {
     // timeout at 60000 milliseconds (60 seconds)
-    var options = {timeout:60000}
+    var options = {
+      timeout: 60000
+    }
     navigator.geolocation.getCurrentPosition(showLocation, errorHandler, options)
   } else {
     console.log("Browser does not support geolocation!")
@@ -46,17 +56,25 @@ function locateUser (map) {
       .then(body => {
         if (!browserLocated && !Markers.userHasClicked()) {
 
-          showDataAtPoint(map,{
-            lngLat: 
-            {lng: body.longitude,
-            lat: body.latitude}
+          var lngLat = {
+            lng: body.longitude,
+            lat: body.latitude
+          }
+
+          // Abort if user coordinate is outside India
+          if (!(lngLat.lng > 63 && lngLat.lng < 97 && lngLat.lat > 7 && lngLat.lat < 36)) {
+            return
+          }
+
+          showDataAtPoint(map, {
+            lngLat: lngLat
           })
 
           map.flyTo({
-            center: [body.longitude, body.latitude],
+            center: [lngLat.lng, lngLat.lat],
             zoom: 9
           });
-          
+
         }
       })
   }, 2000)
