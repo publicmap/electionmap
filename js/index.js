@@ -25,7 +25,7 @@ const _app = {
 // Initialize GL map
 var map = new mapboxgl.Map(_app.map.init);
 
-map.on('load', ()=>{
+map.on('load', () => {
 
   // Setup map layers for styling
   addStyleLayers(map);
@@ -36,21 +36,19 @@ map.on('load', ()=>{
   // Add map UI controls
   addMapControls(map, mapboxgl.accessToken, {
     MapboxGeocoder: {
-      position:'top-right',
+      position: 'top-right',
       country: 'in'
     }
   });
   map.touchZoomRotate.disableRotation();
 
   //Define map interactivity
+
   map.on('click', 'pc fill mask', (e) => {
 
     // Show constituency details at location
-    showDataAtPoint(map, e) 
+    showDataAtPoint(map, e)
 
   })
 
 });
-
-
-

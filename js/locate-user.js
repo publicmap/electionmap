@@ -53,9 +53,6 @@ function locateUser (map) {
             lat: body.latitude}
           })
 
-          var getConstituency = map.queryRenderedFeatures([body.longitude,body.latitude],{layers:['pc line border','pc fill mask', 'pc line border-highlight']});
-          console.log(getConstituency);
-
           map.flyTo({
             center: [body.longitude, body.latitude],
             zoom: 9

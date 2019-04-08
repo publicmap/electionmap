@@ -9,9 +9,6 @@ function showDataAtPoint (map, e) {
 
   // Add marker at clicked location
   Markers.addMarker(map, e);
-
-  var getConstituency = map.queryRenderedFeatures([e.lngLat.lng,e.lngLat.lat],{layers:['pc line border','pc fill mask', 'pc line border-highlight']});
-  console.log(getConstituency);
   
   const tilequeryURL = getTilequeryURL(e.lngLat)
 
@@ -23,7 +20,6 @@ function showDataAtPoint (map, e) {
   document.getElementById('infoPanel').innerHTML = '';
   document.getElementById('infoPanel').classList.add('loading','loading--s');
 
-  
 
   // use fetch to fetch data - this maintains consistency with using fetch elsewhere
   // if we have browser considerations where `fetch` does not work,
@@ -34,8 +30,6 @@ function showDataAtPoint (map, e) {
       // merge the damn properies
       console.log(data);
       var holder = Object.assign({}, data.features[0].properties, data.features[1].properties);
-
-
 
       var ECI_code = ECILookup[String(holder.st_code)]['ECI_code'];
 
@@ -52,7 +46,7 @@ function showDataAtPoint (map, e) {
       document.getElementById('infoPanel').classList.remove('loading');
       document.getElementById('infoPanel').innerHTML = info;
 
-
+      // Clear previous and set the feature-state of the selected constieuncy feature id in the style layer as 'active'
       map.removeFeatureState({
         source: 'mapbox://planemad.3picr4b8',
         sourceLayer: 'pc'
