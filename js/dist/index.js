@@ -41,32 +41,31 @@ module.exports = addStyleLayers
 
 // Add styling to map layers to show active and hover constituencies
 
-function addStyleLayers (map) {
+function addStyleLayers(map) {
 
+    map.setPaintProperty('pc line border-highlight', 'line-color', [
+        "match", ["feature-state", "state"], 'active',
+        "hsl(62, 97%, 61%)",
+        "match", ["feature-state", "state"], 'hover',
+        "hsl(62, 97%, 61%)",
+        "hsl(22, 98%, 92%)"
+    ])
 
-  map.setPaintProperty('pc line border-highlight', 'line-color',  [
-    "match", ["feature-state", "state"], 'active',
-    "hsl(62, 97%, 61%)",
-    "match", ["feature-state", "state"], 'hover',
-    "hsl(62, 97%, 61%)",
-    "hsl(22, 98%, 92%)"
-  ])
+    map.setPaintProperty('pc line border-highlight', 'line-gap-width', [
+        "match", ["feature-state", "state"], 'active',
+        1,
+        "match", ["feature-state", "state"], 'hover',
+        0,
+        0
+    ])
 
-  map.setPaintProperty('pc line border-highlight', 'line-gap-width',  [
-    "match", ["feature-state", "state"], 'active',
-    1,
-    "match", ["feature-state", "state"], 'hover',
-    0,
-    0
-  ])
-
-  map.setPaintProperty('pc fill mask', 'fill-opacity',  [
-    "match", ["feature-state", "state"], 'active',
-    0,
-    "match", ["feature-state", "state"], 'hover',
-    0.2,
-    0.6
-  ])
+    map.setPaintProperty('pc fill mask', 'fill-opacity', [
+        "match", ["feature-state", "state"], 'active',
+        0,
+        "match", ["feature-state", "state"], 'hover',
+        0.2,
+        0.6
+    ])
 
 }
 },{}],4:[function(require,module,exports){
@@ -152,7 +151,7 @@ const _app = {
 // Initialize GL map
 var map = new mapboxgl.Map(_app.map.init);
 
-map.on('load', ()=>{
+map.on('load', () => {
 
   // Setup map layers for styling
   addStyleLayers(map);
@@ -163,25 +162,22 @@ map.on('load', ()=>{
   // Add map UI controls
   addMapControls(map, mapboxgl.accessToken, {
     MapboxGeocoder: {
-      position:'top-right',
+      position: 'top-right',
       country: 'in'
     }
   });
   map.touchZoomRotate.disableRotation();
 
   //Define map interactivity
+
   map.on('click', 'pc fill mask', (e) => {
 
     // Show constituency details at location
-    showDataAtPoint(map, e) 
+    showDataAtPoint(map, e)
 
   })
 
 });
-
-
-
-
 },{"./add-style-layers":3,"./addMapControls":4,"./locate-user":7,"./show-data-at-point":9}],7:[function(require,module,exports){
 var showDataAtPoint = require('./show-data-at-point')
 var Markers = require('./add-marker');
@@ -238,9 +234,6 @@ function locateUser (map) {
             lat: body.latitude}
           })
 
-          var getConstituency = map.queryRenderedFeatures([body.longitude,body.latitude],{layers:['pc line border','pc fill mask', 'pc line border-highlight']});
-          console.log(getConstituency);
-
           map.flyTo({
             center: [body.longitude, body.latitude],
             zoom: 9
@@ -295,9 +288,6 @@ function showDataAtPoint (map, e) {
 
   // Add marker at clicked location
   Markers.addMarker(map, e);
-
-  var getConstituency = map.queryRenderedFeatures([e.lngLat.lng,e.lngLat.lat],{layers:['pc line border','pc fill mask', 'pc line border-highlight']});
-  console.log(getConstituency);
   
   const tilequeryURL = getTilequeryURL(e.lngLat)
 
@@ -309,7 +299,6 @@ function showDataAtPoint (map, e) {
   document.getElementById('infoPanel').innerHTML = '';
   document.getElementById('infoPanel').classList.add('loading','loading--s');
 
-  
 
   // use fetch to fetch data - this maintains consistency with using fetch elsewhere
   // if we have browser considerations where `fetch` does not work,
@@ -320,8 +309,6 @@ function showDataAtPoint (map, e) {
       // merge the damn properies
       console.log(data);
       var holder = Object.assign({}, data.features[0].properties, data.features[1].properties);
-
-
 
       var ECI_code = ECILookup[String(holder.st_code)]['ECI_code'];
 
@@ -338,7 +325,7 @@ function showDataAtPoint (map, e) {
       document.getElementById('infoPanel').classList.remove('loading');
       document.getElementById('infoPanel').innerHTML = info;
 
-
+      // Clear previous and set the feature-state of the selected constieuncy feature id in the style layer as 'active'
       map.removeFeatureState({
         source: 'mapbox://planemad.3picr4b8',
         sourceLayer: 'pc'
