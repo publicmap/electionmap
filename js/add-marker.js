@@ -7,7 +7,7 @@
 // Track marker so that we can remove on the next user click
 var marker;
 
-function addMarker(map, lngLat) {
+function addMarker(map, e) {
 
   // Remove existing marker
   if (marker) {
@@ -19,9 +19,11 @@ function addMarker(map, lngLat) {
 
   // Add marker on user click
   marker = new mapboxgl.Marker()
-    .setLngLat(lngLat)
+    .setLngLat(e.lngLat)
     .addTo(map)
   ;
+
+  map.flyTo({center: [e.lngLat.lng,e.lngLat.lat]})
 
 }
 
