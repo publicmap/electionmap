@@ -23,3 +23,4 @@ Websites with useful information for voters pertaining to the 2019 General Elect
 
 **Tamil Nadu**
 - https://arappor.org
+- [Candidate profiles and analysis - Citizen Matters(Chennai)](http://chennai.citizenmatters.in/series/ls-elections-2019)
