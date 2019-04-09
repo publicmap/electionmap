@@ -15,6 +15,8 @@ Websites with useful information for voters pertaining to the 2019 General Elect
 
 - [Candidate affidavits and comparison - myneta](http://myneta.info/LokSabha2019/)
 - [Visualisation of MP wealth, education and criminal cases - netafilter](https://www.netafilter.in)
+- [Election related datasets and party manifestos - Open City](http://opencity.in/topic/election)
+- [Election database and charts - India Votes](http://www.indiavotes.com/)
 
 ## Citizen collectives and organisations
 
