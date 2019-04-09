@@ -51,4 +51,39 @@ map.on('load', () => {
 
   })
 
+
+  // Add hover effect on mouseover
+  var hoveredFeatureId = null;
+  map.on('mousemove', 'pc fill mask', (e) => {
+
+    if ( e.features[0].id != hoveredFeatureId ){
+
+      map.removeFeatureState({
+        source: 'mapbox://planemad.3picr4b8',
+        sourceLayer: 'pc',
+        id: hoveredFeatureId
+      },'state');
+
+      var currentState = map.getFeatureState({
+        source: 'mapbox://planemad.3picr4b8',
+        sourceLayer: 'pc',
+        id: e.features[0].id
+      })['state']
+
+        if ( currentState != 'active'){
+
+        map.setFeatureState({
+          source: 'mapbox://planemad.3picr4b8',
+          sourceLayer: 'pc',
+          id: e.features[0].id
+        }, {
+          state: 'hover'
+        });
+
+        hoveredFeatureId = e.features[0].id;
+
+      }
+    }
+  })
+
 });

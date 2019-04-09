@@ -7,6 +7,12 @@ module.exports = showDataAtPoint
 
 function showDataAtPoint (map, e) {
 
+
+    // Query rendered features at clicked point
+    var features = map.queryRenderedFeatures(e.point,{layers:['pc fill mask']})
+    console.log(features)
+    console.log(e.point)
+
   // Add marker at clicked location
   Markers.addMarker(map, e);
   
@@ -27,6 +33,7 @@ function showDataAtPoint (map, e) {
   fetch(tilequeryURL)
     .then(response => response.json())
     .then(data => {
+      
       // merge the damn properies
       var holder = Object.assign({}, data.features[0].properties, data.features[1].properties);
       console.log('Constituency details API:',holder);
