@@ -46,44 +46,50 @@ map.on('load', () => {
 
   map.on('click', 'pc fill mask', (e) => {
 
+    // Package the features at clicked location to resemble a tilequery result
+    e.tileFeatures = {
+      'ac': {},
+      'pc': e.features[0],
+      'schedule': {}
+    }
+
     // Show constituency details at location
     showDataAtPoint(map, e)
 
   })
 
+  // // Add hover effect on mouseover
+  // var hoveredFeatureId = null;
+  // map.on('mousemove', 'pc fill mask', (e) => {
 
-  // Add hover effect on mouseover
-  var hoveredFeatureId = null;
-  map.on('mousemove', 'pc fill mask', (e) => {
+  //   if (e.features[0].id != hoveredFeatureId) {
 
-    if ( e.features[0].id != hoveredFeatureId ){
+  //     var currentState = map.getFeatureState({
+  //       source: 'mapbox://planemad.3picr4b8',
+  //       sourceLayer: 'pc',
+  //       id: e.features[0].id
+  //     })['state']
 
-      map.removeFeatureState({
-        source: 'mapbox://planemad.3picr4b8',
-        sourceLayer: 'pc',
-        id: hoveredFeatureId
-      },'state');
+  //     if (currentState != 'active') {
 
-      var currentState = map.getFeatureState({
-        source: 'mapbox://planemad.3picr4b8',
-        sourceLayer: 'pc',
-        id: e.features[0].id
-      })['state']
+  //       map.removeFeatureState({
+  //         source: 'mapbox://planemad.3picr4b8',
+  //         sourceLayer: 'pc',
+  //         id: hoveredFeatureId
+  //       }, 'state');
 
-        if ( currentState != 'active'){
+  //       map.setFeatureState({
+  //         source: 'mapbox://planemad.3picr4b8',
+  //         sourceLayer: 'pc',
+  //         id: e.features[0].id
+  //       }, {
+  //         state: 'hover'
+  //       });
 
-        map.setFeatureState({
-          source: 'mapbox://planemad.3picr4b8',
-          sourceLayer: 'pc',
-          id: e.features[0].id
-        }, {
-          state: 'hover'
-        });
+  //       hoveredFeatureId = e.features[0].id;
 
-        hoveredFeatureId = e.features[0].id;
-
-      }
-    }
-  })
+  //     }
+  //   }
+  // })
 
 });
