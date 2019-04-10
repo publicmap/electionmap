@@ -7,8 +7,6 @@ function addStyleLayers(map) {
     map.setPaintProperty('pc line border-highlight', 'line-color', [
         "match", ["feature-state", "state"], 'active',
         "hsl(62, 97%, 61%)",
-        "match", ["feature-state", "state"], 'hover',
-        "hsl(62, 97%, 61%)",
         "hsl(22, 98%, 92%)"
     ])
 
