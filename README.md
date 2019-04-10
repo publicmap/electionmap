@@ -17,7 +17,7 @@ The electionmap API can be used to retreive constituency details at any coordina
 
 [`https://api.mapbox.com/v4/planemad.3picr4b8/tilequery/<LONGITUDE>,<LATITUDE>.json?limit=5&radius=0&dedupe=true&access_token=<MAPBOX_ACCESS_TOKEN>`](https://api.mapbox.com/v4/planemad.3picr4b8/tilequery/78.0714,32.2263.json?limit=5&radius=0&dedupe=true&access_token=pk.eyJ1IjoicGxhbmVtYWQiLCJhIjoiY2p1M3JuNnRjMGZ2NzN6bGVqN3Z4bmVtOSJ9.Fx0kmfg-7ll2Oi-7ZVJrfQ)
 
-Please generate a free developer token from [Mapbox](). For more options check the [Mapbox tilequey documentation](https://docs.mapbox.com/help/interactive-tools/tilequery-api-playground/)
+Generate a free developer token from [Mapbox](https://www.mapbox.com/). For more options check the [Mapbox tilequey documentation](https://docs.mapbox.com/help/interactive-tools/tilequery-api-playground/)
 
 ### Constituency boundaries
 Constituency shapefiles sourced from [datameet maps](https://github.com/datameet/maps) and hosted on [Mapbox](https://www.mapbox.com). 
