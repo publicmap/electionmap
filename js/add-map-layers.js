@@ -1,8 +1,8 @@
-module.exports = addStyleLayers
+module.exports = addMapLayers
 
 // Add styling to map layers to show active and hover constituencies
 
-function addStyleLayers(map) {
+function addMapLayers(map) {
 
     map.setPaintProperty('pc line border-highlight', 'line-color', [
         "match", ["feature-state", "state"], 'active',
