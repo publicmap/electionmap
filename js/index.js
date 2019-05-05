@@ -3,7 +3,7 @@
 var addMapControls = require('./addMapControls')
 var showDataAtPoint = require('./show-data-at-point')
 var locateUser = require('./locate-user')
-var addStyleLayers = require('./add-style-layers')
+var addMapLayers = require('./add-map-layers')
 
 // Enable Mapbox services
 mapboxgl.accessToken = 'pk.eyJ1IjoicGxhbmVtYWQiLCJhIjoiY2p1M3JuNnRjMGZ2NzN6bGVqN3Z4bmVtOSJ9.Fx0kmfg-7ll2Oi-7ZVJrfQ';
@@ -28,7 +28,7 @@ var map = new mapboxgl.Map(_app.map.init);
 map.on('load', () => {
 
   // Setup map layers for styling
-  addStyleLayers(map);
+  addMapLayers(map);
 
   // Find user location
   locateUser(map);

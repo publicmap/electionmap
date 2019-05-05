@@ -74,6 +74,20 @@
             </select>
             <div class='select-arrow'></div>
           </div> -->
+          <!-- <div class='toggle-group mr18'>
+              <label class='toggle-container'>
+                <input id='checked name='toggle-small' type='radio' />
+                <div class='toggle toggle--s'>Constituency</div>
+              </label>
+              <label class='toggle-container'>
+                <input name='toggle-small' type='radio' />
+                <div class='toggle toggle--s'>Schedule</div>
+              </label>
+              <label class='toggle-container'>
+                  <input name='toggle-small' type='radio' />
+                  <div class='toggle toggle--s'>MP</div>
+                </label>
+            </div> -->
           <div id='infoPanel' class='py6'>
             <p>Click location to view constituency details</p>
           </div>
@@ -87,54 +101,96 @@
       </div>
 
       <div id='about-modal' class='fixed top right bottom left scroll-auto bg-darken10' style='display:none'>
-        <div class='flex-parent flex-parent--center-main pt36'>
-          <div class='flex-child bg-white round relative w600'>
-            <button class='absolute top right px12 py12'
-              onclick="document.getElementById('about-modal').style.display='none';">
-              <svg class='icon link color-darken50'>
-                <use xlink:href='#icon-close'></use>
-              </svg>
-            </button>
-            <div class='px24 py24 prose'>
-              <h3 class='mb12'>About ElectionMap.in</h3>
-              <a class="twitter-share-button"
-  href="https://twitter.com/intent/tweet?text=Indian Election Map Tool by @datameet">
-Tweet</a>
-<div class="fb-share-button" data-href="https://electionmap.in" data-layout="button_count" data-size="small" style='top:-4px'><a target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Felectionmap.in%2F&amp;src=sdkpreparse" class="fb-xfbml-parse-ignore">Share</a></div>
-              <p class='txt-m'>
-                ElectionMap is an open source citizen awareness tool built by the <a
-                  href="http://datameet.org/">Datameet - Indian Open Data Community</a> to provide the 900 million
-                eligible voters in India an easy way of finding voting information relating to the upcoming <a
-                  href="https://en.wikipedia.org/wiki/2019_Indian_general_election">2019 General Elections</a> which are
-                to be held from 11 April to 19 May 2019.
+          <div class='flex-parent flex-parent--center-main pt36'>
+            <div class='flex-child bg-white round relative w600'>
+              <button class='absolute top right px12 py12'
+                onclick="document.getElementById('about-modal').style.display='none';">
+                <svg class='icon link color-darken50'>
+                  <use xlink:href='#icon-close'></use>
+                </svg>
+              </button>
+              <div class='px24 py24 prose'>
+
+                  <h3>Election Map of India 🗳️🇮🇳</h3>
+
+                  <p class='txt-l'>
+                      Locate your constituency and voting details for the <a
+                      href="https://en.wikipedia.org/wiki/2019_Indian_general_election">2019 Lok Sabha Elections</a>
+                    </p>
+
+                  <h4>Election Schedule</h4>
+
+                  <table class='table'>
+                      <thead>
+                        <tr>
+                          <th>Date</th>
+                          <th>Progress</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                            <td>6 May</td>
+                            <td>Polling: Phase 5<br>
+                              <small>Bihar, Jammu and Kashmir, Jharkhand, Madhya Pradesh, Rajasthan, Uttar Pradesh, West Bengal</small></td>
+                        </tr>
+                        <tr>
+                            <td>12 May</td>
+                            <td>Polling: Phase 6<br>
+                              <small>Bihar, Haryana, Jharkhand, Madhya Pradesh, Uttar Pradesh, West Bengal, Delhi</small></td>
+                        </tr>
+                        <tr>
+                            <td>19 May</td>
+                            <td>Polling: Phase 7<br>
+                              <small>Bihar, Himachal Pradesh, Jharkhand, Madhya Pradesh, Punjab, West Bengal, Chandigarh, Uttar Pradesh</small></td>
+                        </tr>
+                        <tr>
+                            <td>23 May</td>
+                            <td><a href='http://eciresults.nic.in/'>Election results</a></td>
+                        </tr>
+                      </tbody>
+                    </table>
+
+                <h4>About</h4>
+                <a class="twitter-share-button"
+    href="https://twitter.com/intent/tweet?text=Indian Election Map Tool by @datameet">
+  Tweet</a>
+  <div class="fb-share-button" data-href="https://electionmap.in" data-layout="button_count" data-size="small" style='top:-4px'><a target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Felectionmap.in%2F&amp;src=sdkpreparse" class="fb-xfbml-parse-ignore">Share</a></div>
+                <p class='txt-m'>
+                  ElectionMap is an open source citizen awareness tool built by the <a
+                    href="http://datameet.org/">Datameet - Indian Open Data Community</a> to provide the 900 million
+                  eligible voters in India an easy way of finding voting information relating to the upcoming <a
+                    href="https://en.wikipedia.org/wiki/2019_Indian_general_election">2019 General Elections</a> which are
+                  to be held from 11 April to 19 May 2019.
+                </p>
+  
+                <p>
+                  The tool uses available open data of electoral boundaries to locate the parliamentary constituency and
+                  provides polling dates published by the Election Commission of India and links to the affadavits of
+                  contesting candidates. 
+                </p>
+
+                <p class='txt-mono'>DISCALIMER: All data displayed on this website have been compiled from various sources and to be used for reference purposes only. Users are requested ro <a href='https://github.com/publicmap/electionmap/issues'>report any issues</a> and to verify official information with the <a href='https://eci.gov.in/'>Election Comission of India</a></p>
+
+                <h5>How to use</h5>
+                
+                <p>The map will automatically fetch your location and highlight the parliamentary constituency based on your location.</p>
+                <img src='/img/how-to-use-loading.gif'>
+  
+                <p>If this is incorrect, you can use the search button on the right or manually click on the map to select another location.</p>
+                <img src='/img/how-to-use-search.gif'>
+  
+                <h5>Resources</h5>
+                <p>For more voting resources please see <a
+                  href='https://github.com/publicmap/electionmap/blob/master/LINKS.md'>list of useful links</a>
               </p>
-
-              <p>
-                The tool uses available open data of electoral boundaries to locate the parliamentary constituency and
-                provides polling dates published by the Election Commission of India and links to the affadavits of
-                contesting candidates. 
-              </p>
-
-              <h5 class='mb12'>How to use</h5>
-              
-              <p>The map will automatically fetch your location and highlight the parliamentary constituency based on your location.</p>
-              <img src='/img/how-to-use-loading.gif'>
-
-              <p>If this is incorrect, you can use the search button on the right or manually click on the map to select another location.</p>
-              <img src='/img/how-to-use-search.gif'>
-
-              <h5 class='mb12'>Resources</h5>
-              <p>For more voting resources please see <a
-                href='https://github.com/publicmap/electionmap/blob/master/LINKS.md'>list of useful links</a>
-            </p>
-              <h4 class='mb12'>Party map of 2014 Elections</h3>
-                <a href="https://commons.wikimedia.org/wiki/File:Indische_Parlamentswahl_2014_Parteien.svg"><img
-                  src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e6/Indische_Parlamentswahl_2014_Parteien.svg/831px-Indische_Parlamentswahl_2014_Parteien.svg.png"></a>
- 
+                <h4 class='mb12'>Party map of 2014 Elections</h3>
+                  <a href="https://commons.wikimedia.org/wiki/File:Indische_Parlamentswahl_2014_Parteien.svg"><img
+                    src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e6/Indische_Parlamentswahl_2014_Parteien.svg/831px-Indische_Parlamentswahl_2014_Parteien.svg.png"></a>
+   
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
     </div>
 
