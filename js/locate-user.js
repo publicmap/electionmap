@@ -1,5 +1,6 @@
-var showDataAtPoint = require('./show-data-at-point')
 var Markers = require('./add-marker');
+var mapLayers = require('./map-layer-config')
+
 var browserLocated = false
 
 module.exports = locateUser
@@ -8,7 +9,7 @@ function errorHandler(err) {
   console.log('error getting user location', err)
 }
 
-function locateUser(map) {
+function locateUser(map, showDataAtPoint) {
 
   function showLocation(position) {
 
@@ -25,7 +26,7 @@ function locateUser(map) {
     }
 
     // Abort if user coordinate is outside India
-    if (!(lngLat.lng > 63 && lngLat.lng < 97 && lngLat.lat > 7 && lngLat.lat < 36)) {
+    if (!(lngLat.lng > mapLayers.map.bounds[0] && lngLat.lng < mapLayers.map.bounds[2] && lngLat.lat > mapLayers.map.bounds[1] && lngLat.lat < mapLayers.map.bounds[3])) {
       return
     }
 
