@@ -6,29 +6,37 @@ var browserLocated = false
 module.exports = locateUser
 
 function errorHandler(err) {
-  console.log('error getting user location', err)
+  console.log('Error getting accurate user location', err)
 }
 
 function locateUser(map, showDataAtPoint) {
 
-  function showLocation(position) {
+  // Checks if a given point is within the default map area
+  function isPointWithinBounds(lngLat){
+    if (lngLat.lng > mapLayers.map.bounds[0] && lngLat.lng < mapLayers.map.bounds[2] && lngLat.lat > mapLayers.map.bounds[1] && lngLat.lat < mapLayers.map.bounds[3]) {
+      return true;
+    }else{
+      return false;
+    }
+  }
+
+  // Display user location on the map
+  function showLocation(lngLat) {
 
     // User has an active location clicked and thus we don't need Browser Geolocation
     if (Markers.userHasClicked()) {
       return;
     }
 
-    browserLocated = true
-
-    var lngLat = {
-      lng: position.coords.longitude,
-      lat: position.coords.latitude
-    }
-
-    // Abort if user coordinate is outside India
-    if (!(lngLat.lng > mapLayers.map.bounds[0] && lngLat.lng < mapLayers.map.bounds[2] && lngLat.lat > mapLayers.map.bounds[1] && lngLat.lat < mapLayers.map.bounds[3])) {
+    // Abort if user coordinate is outside map area
+    if (!isPointWithinBounds(lngLat)) {
       return
     }
+
+    map.flyTo({
+      center: [lngLat.lng, lngLat.lat],
+      zoom: 9
+    });
 
     showDataAtPoint(map, {
       lngLat: lngLat
@@ -36,12 +44,20 @@ function locateUser(map, showDataAtPoint) {
 
   }
 
-  if (navigator.geolocation) {
+  // Try to determinne accurate user locationn using HTML5 geolocation
+  if (navigator.geolocation && !Markers.userHasClicked()) {
     // timeout at 60000 milliseconds (60 seconds)
     var options = {
+      enableHighAccuracy: true,
       timeout: 60000
     }
-    navigator.geolocation.getCurrentPosition(showLocation, errorHandler, options)
+    function showGeoLocation(postion){
+      showLocation({
+        lng: position.coords.longitude,
+        lat: position.coords.latitude
+      })
+    }
+    navigator.geolocation.getCurrentPosition(showGeoLocation, errorHandler, options)
   } else {
     console.log("Browser does not support geolocation!")
   }
@@ -57,24 +73,12 @@ function locateUser(map, showDataAtPoint) {
       .then(body => {
         if (!browserLocated && !Markers.userHasClicked()) {
 
-          var lngLat = {
+          browserLocated = true
+
+          showLocation({
             lng: body.longitude,
             lat: body.latitude
-          }
-
-          // Abort if user coordinate is outside India
-          if (!(lngLat.lng > 63 && lngLat.lng < 97 && lngLat.lat > 7 && lngLat.lat < 36)) {
-            return
-          }
-
-          showDataAtPoint(map, {
-            lngLat: lngLat
           })
-
-          map.flyTo({
-            center: [lngLat.lng, lngLat.lat],
-            zoom: 9
-          });
 
         }
       })

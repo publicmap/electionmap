@@ -8,6 +8,7 @@ module.exports = showDataAtPoint
 
 function showDataAtPoint(map, e) {
 
+  // Create object to hold query results of map features at a point
   var featuresAtPoint = {lngLat:e.lngLat};
 
   // Query rendered features at clicked point and store results into an object
