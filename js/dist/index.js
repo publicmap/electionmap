@@ -12,9 +12,6 @@ module.exports = addMapLayers
 
 function addMapLayers(map) {
 
-    map.addSource('bbmp-block', mapLayers['bbmp-block'].source)
-    map.addLayer(mapLayers['bbmp-block']['bbmp-block line']);
-
     map.setPaintProperty('pc line border-highlight', 'line-color', [
         "match", ["feature-state", "state"], 'active',
         "hsl(62, 97%, 61%)",
@@ -38,7 +35,7 @@ function addMapLayers(map) {
     ])
 
 }
-},{"./ECILookup":1,"./map-layer-config":9}],3:[function(require,module,exports){
+},{"./ECILookup":1,"./map-layer-config":8}],3:[function(require,module,exports){
 /**
  * Mapbox Marker
  * Add a marker upon user click
@@ -132,12 +129,6 @@ function addMapControls(map, accessToken, options) {
 module.exports = addMapControls;
 
 },{}],6:[function(require,module,exports){
-module.exports = getTilequeryURL
-
-function getTilequeryURL (lngLat) {
-  return `https://api.mapbox.com/v4/planemad.3picr4b8/tilequery/${lngLat.lng},${lngLat.lat}.json?limit=5&radius=0&dedupe=true&access_token=${mapboxgl.accessToken}`
-}
-},{}],7:[function(require,module,exports){
 'use strict';
 
 var addMapControls = require('./addMapControls')
@@ -148,24 +139,10 @@ var addMapLayers = require('./add-map-layers')
 var addSpreadsheetData = require('./add-spreadsheet-data')
 
 // Enable Mapbox services
-mapboxgl.accessToken = 'pk.eyJ1IjoicGxhbmVtYWQiLCJhIjoiY2p1M3JuNnRjMGZ2NzN6bGVqN3Z4bmVtOSJ9.Fx0kmfg-7ll2Oi-7ZVJrfQ';
-
-// App configuration
-const _app = {
-  map: {
-    init: {
-      container: 'map',
-      style: 'mapbox://styles/planemad/cjoescdh20cl62spey0zj3v19',
-      bounds: [66, 7, 99, 37],
-      maxBounds: [50, 5, 114, 40],
-      pitchWithRotate: false,
-      hash: true
-    }
-  }
-}
+mapboxgl.accessToken = mapLayers['access-token'];
 
 // Initialize GL map
-var map = new mapboxgl.Map(_app.map.init);
+var map = new mapboxgl.Map(mapLayers.map);
 
 map.on('load', () => {
 
@@ -176,7 +153,7 @@ map.on('load', () => {
   addSpreadsheetData();
 
   // Find user location
-  locateUser(map);
+  locateUser(map, showDataAtPoint);
 
   // Add map UI controls
   addMapControls(map, mapboxgl.accessToken, {
@@ -189,16 +166,9 @@ map.on('load', () => {
 
   //Define map interactivity
 
-  map.on('click', mapLayers["click-layer-id"], (e) => {
+  map.on('click', mapLayers["click-layer-ids"][0], (e) => {
 
-    // Package the features at clicked location to resemble a tilequery result
-    e.tileFeatures = {
-      'ac': {},
-      'pc': e.features[0],
-      'schedule': {}
-    }
-
-    // Show constituency details at location
+    // Show details of map features at location
     showDataAtPoint(map, e)
 
   })
@@ -238,37 +208,46 @@ map.on('load', () => {
   // })
 
 });
-},{"./add-map-layers":2,"./add-spreadsheet-data":4,"./addMapControls":5,"./locate-user":8,"./map-layer-config":9,"./show-data-at-point":11}],8:[function(require,module,exports){
-var showDataAtPoint = require('./show-data-at-point')
+},{"./add-map-layers":2,"./add-spreadsheet-data":4,"./addMapControls":5,"./locate-user":7,"./map-layer-config":8,"./show-data-at-point":10}],7:[function(require,module,exports){
 var Markers = require('./add-marker');
+var mapLayers = require('./map-layer-config')
+
 var browserLocated = false
 
 module.exports = locateUser
 
 function errorHandler(err) {
-  console.log('error getting user location', err)
+  console.log('Error getting accurate user location', err)
 }
 
-function locateUser(map) {
+function locateUser(map, showDataAtPoint) {
 
-  function showLocation(position) {
+  // Checks if a given point is within the default map area
+  function isPointWithinBounds(lngLat){
+    if (lngLat.lng > mapLayers.map.bounds[0] && lngLat.lng < mapLayers.map.bounds[2] && lngLat.lat > mapLayers.map.bounds[1] && lngLat.lat < mapLayers.map.bounds[3]) {
+      return true;
+    }else{
+      return false;
+    }
+  }
+
+  // Display user location on the map
+  function showLocation(lngLat) {
 
     // User has an active location clicked and thus we don't need Browser Geolocation
     if (Markers.userHasClicked()) {
       return;
     }
 
-    browserLocated = true
-
-    var lngLat = {
-      lng: position.coords.longitude,
-      lat: position.coords.latitude
-    }
-
-    // Abort if user coordinate is outside India
-    if (!(lngLat.lng > 63 && lngLat.lng < 97 && lngLat.lat > 7 && lngLat.lat < 36)) {
+    // Abort if user coordinate is outside map area
+    if (!isPointWithinBounds(lngLat)) {
       return
     }
+
+    map.flyTo({
+      center: [lngLat.lng, lngLat.lat],
+      zoom: 9
+    });
 
     showDataAtPoint(map, {
       lngLat: lngLat
@@ -276,12 +255,20 @@ function locateUser(map) {
 
   }
 
-  if (navigator.geolocation) {
+  // Try to determinne accurate user locationn using HTML5 geolocation
+  if (navigator.geolocation && !Markers.userHasClicked()) {
     // timeout at 60000 milliseconds (60 seconds)
     var options = {
+      enableHighAccuracy: true,
       timeout: 60000
     }
-    navigator.geolocation.getCurrentPosition(showLocation, errorHandler, options)
+    function showGeoLocation(postion){
+      showLocation({
+        lng: position.coords.longitude,
+        lat: position.coords.latitude
+      })
+    }
+    navigator.geolocation.getCurrentPosition(showGeoLocation, errorHandler, options)
   } else {
     console.log("Browser does not support geolocation!")
   }
@@ -297,54 +284,37 @@ function locateUser(map) {
       .then(body => {
         if (!browserLocated && !Markers.userHasClicked()) {
 
-          var lngLat = {
+          browserLocated = true
+
+          showLocation({
             lng: body.longitude,
             lat: body.latitude
-          }
-
-          // Abort if user coordinate is outside India
-          if (!(lngLat.lng > 63 && lngLat.lng < 97 && lngLat.lat > 7 && lngLat.lat < 36)) {
-            return
-          }
-
-          showDataAtPoint(map, {
-            lngLat: lngLat
           })
-
-          map.flyTo({
-            center: [lngLat.lng, lngLat.lat],
-            zoom: 9
-          });
 
         }
       })
   }, 2000)
 }
-},{"./add-marker":3,"./show-data-at-point":11}],9:[function(require,module,exports){
+},{"./add-marker":3,"./map-layer-config":8}],8:[function(require,module,exports){
 module.exports = {
-    'click-layer-id': 'pc fill mask',
-    'bbmp-block': {
-        source: {
-            type: 'vector',
-            url: 'mapbox://sensinglocal.cjv8u3cgj01k52rs0x46arrdf-6847v'
-        },
-        'bbmp-block line': {
-            "id": "bbmp-block line",
-            "type": "line",
-            "source": 'bbmp-block',
-            "source-layer": "Blocks_datafor7Nos_Mapbox",
-            "layout": {
-                "line-join": "round",
-                "line-cap": "round"
-            },
-            "paint": {
-                "line-color": "#ff69b4",
-                "line-width": 1
-            }
-        }
-    }
+    'access-token' :'pk.eyJ1IjoicGxhbmVtYWQiLCJhIjoiY2p1M3JuNnRjMGZ2NzN6bGVqN3Z4bmVtOSJ9.Fx0kmfg-7ll2Oi-7ZVJrfQ',
+     // Map innitialization
+     map: {
+        container: 'map',
+        style: 'mapbox://styles/planemad/cjoescdh20cl62spey0zj3v19',
+        bounds: [66, 7, 99, 37],
+        maxBounds: [50, 5, 114, 40],
+        pitchWithRotate: false,
+        hash: true
+      },
+    // Queryable feature layers on click
+    // for the queries to work, then need to be visible in the map style
+    // to make innvisible queryable layers, set the paint opacity to 0
+    'click-layer-ids': ['pc fill mask'],
+    // Corresponding tileset ids for feature querying
+    'click-layer-tileset-ids': ['planemad.3picr4b8']
 }
-},{}],10:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 if (typeof Object.assign != 'function') {
   console.log('This polyfill for Object.assign command is being run in a browser that has an incompatibility issue. See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/assign#Browser_compatibility .');
   // Must be writable: true, enumerable: false, configurable: true
@@ -376,8 +346,7 @@ if (typeof Object.assign != 'function') {
   });
 }
 
-},{}],11:[function(require,module,exports){
-var getTilequeryURL = require('./get-tilequery-url')
+},{}],10:[function(require,module,exports){
 var ECILookup = require('./ECILookup')
 var Markers = require('./add-marker')
 var mapLayers = require('./map-layer-config')
@@ -387,71 +356,77 @@ module.exports = showDataAtPoint
 
 function showDataAtPoint(map, e) {
 
-  // Query rendered features at clicked point
-  var features = map.queryRenderedFeatures(e.point, {
-    layers: [mapLayers["click-layer-id"]]
-  })
+  // Create object to hold query results of map features at a point
+  var featuresAtPoint = {lngLat:e.lngLat};
 
-  // Add marker at clicked location
+  // Add a map marker at clicked location and move the map to center it
   Markers.addMarker(map, e);
-
-  const tilequeryURL = getTilequeryURL(e.lngLat)
-
   map.flyTo({
     center: [e.lngLat.lng, e.lngLat.lat]
   })
 
-  // If event object has tile features from clicked event, use it to update the info panel
-  // Else fetch the features at that point using the tilequery API
-  if (e.tileFeatures != undefined) {
-    updateInfoPanel(map, e.tileFeatures);
-  } else {
-    // use fetch to fetch data - this maintains consistency with using fetch elsewhere
-    // if we have browser considerations where `fetch` does not work,
-    // we can replace this with $.getJSON or so
-    fetch(tilequeryURL)
-      .then(response => response.json())
-      .then(data => {
-
-        // merge the damn properies
-        // var holder = Object.assign({}, data.features[0].properties, data.features[1].properties);
-
-        var tileFeatures = {}
-        data.features.forEach(feature => {
-          tileFeatures[feature.properties.tilequery.layer] = feature;
-        });
-
-        updateInfoPanel(map, tileFeatures);
-
-      })
-      .catch(err => {
-        document.getElementById('infoPanel').classList.remove('loading');
-        document.getElementById('infoPanel').innerHTML = `Error while fetching data for that location`;
-      })
+  // Detect if there is a screen point location from a click event, in which case we can query the 
+  // visible tile layers directly instead of using a request to the tilequery API
+  if(e.point !== undefined){
+    map.queryRenderedFeatures(e.point, {
+      layers: mapLayers["click-layer-ids"]
+    }).forEach(feature => {
+      featuresAtPoint[feature.sourceLayer] = feature;
+    })
   }
+
+  // If not successful in getting the results directly from loaded tiles
+  // fetch the features at that point using the tilequery API
+  if (Object.keys(featuresAtPoint).length == 1) {
+
+    // Fetch features from the array of tileset ids using the Mapbox tilequery API
+    // Create an array of tilequery  urls and fetch them using promises
+    var fetchRequests = mapLayers['click-layer-tileset-ids'].map(tileset =>
+      // Mapbox tilequery API: https://docs.mapbox.com/help/interactive-tools/tilequery-api-playground/
+      fetch(`https://api.mapbox.com/v4/${tileset}/tilequery/${e.lngLat.lng},${e.lngLat.lat}.json?limit=5&radius=0&dedupe=true&access_token=${mapboxgl.accessToken}`)
+      .then(resp => resp.json())
+    )
+
+    // Fetch and bundle all the results
+    Promise.all(fetchRequests)
+    .then(response => {
+      // Add all features from the tilequery results to the result object
+      response.forEach(featureCollection => {
+        featureCollection.features.forEach(feature => {
+          featuresAtPoint[feature.properties.tilequery.layer] = feature;
+        })
+      });
+
+      // Update panel with results
+      updateInfoPanel(map, featuresAtPoint);
+
+    })
+  }else{
+    // Update panel with results
+    updateInfoPanel(map, featuresAtPoint);
+  }
+
 }
 
-var activeFeatureId = null;
+function updateInfoPanel(map, featuresAtPoint) {
 
-function updateInfoPanel(map, tileFeatures) {
-
-  console.log('Constituency details API:', tileFeatures);
+  console.log('Features at queries point:', featuresAtPoint);
 
   // Add a loading spinner to the infoPanel while we fetch data
   document.getElementById('infoPanel').innerHTML = '';
   document.getElementById('infoPanel').classList.add('loading', 'loading--s');
 
-  var ECI_code = ECILookup[String(tileFeatures.pc.properties.st_code)]['ECI_code'];
+  var ECI_code = ECILookup[String(featuresAtPoint.pc.properties.st_code)]['ECI_code'];
 
   // Composing link to Official ECI candidates affidavits page: https://affidavit.eci.gov.in/showaffidavit/1/S13/34/PC
-  var ECIAffidavit_URL = `https://affidavit.eci.gov.in/showaffidavit/1/${ECI_code}/${String(tileFeatures.pc.properties.pc_no)}/PC`;
+  var ECIAffidavit_URL = `https://affidavit.eci.gov.in/showaffidavit/1/${ECI_code}/${String(featuresAtPoint.pc.properties.pc_no)}/PC`;
 
   // Composing info
   var info = `<span class='txt-light'>2019 Lok Sabha Elections</span><br>
-    <span class='txt-light'>Your Constituency: </span><b>${tileFeatures.pc.properties.pc_name}</b> (${tileFeatures.pc.properties.pc_no})<br>
-    <span class='txt-light'>Voting is on: </span><b>${tileFeatures.pc.properties['2019_election_date'].split('T')[0]}</b> (Phase ${tileFeatures.pc.properties['2019_election_phase']})<br>
+    <span class='txt-light'>Your Constituency: </span><b>${featuresAtPoint.pc.properties.pc_name}</b> (${featuresAtPoint.pc.properties.pc_no})<br>
+    <span class='txt-light'>Voting is on: </span><b>${featuresAtPoint.pc.properties['2019_election_date'].split('T')[0]}</b> (Phase ${featuresAtPoint.pc.properties['2019_election_phase']})<br>
     <a href="${ECIAffidavit_URL}" target="_blank" class="link">Click here to see the Candidates</a> <br>
-    State: ${tileFeatures.pc.properties.st_name} (${ECI_code})<br>
+    State: ${featuresAtPoint.pc.properties.st_name} (${ECI_code})<br>
     `;
   document.getElementById('infoPanel').classList.remove('loading');
   document.getElementById('infoPanel').innerHTML = info;
@@ -464,10 +439,10 @@ function updateInfoPanel(map, tileFeatures) {
   map.setFeatureState({
     source: 'mapbox://planemad.3picr4b8',
     sourceLayer: 'pc',
-    id: tileFeatures.pc.id
+    id: featuresAtPoint.pc.id
   }, {
     state: 'active'
   });
 
 }
-},{"./ECILookup":1,"./add-marker":3,"./get-tilequery-url":6,"./map-layer-config":9,"./object-assign-polyfill":10}]},{},[7]);
+},{"./ECILookup":1,"./add-marker":3,"./map-layer-config":8,"./object-assign-polyfill":9}]},{},[6]);
