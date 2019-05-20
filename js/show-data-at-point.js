@@ -1,7 +1,6 @@
 var ECILookup = require('./ECILookup')
 var Markers = require('./add-marker')
 var mapLayers = require('./map-layer-config')
-require('./object-assign-polyfill')
 
 module.exports = showDataAtPoint
 
