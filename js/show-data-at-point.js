@@ -1,4 +1,3 @@
-var getTilequeryURL = require('./get-tilequery-url')
 var ECILookup = require('./ECILookup')
 var Markers = require('./add-marker')
 var mapLayers = require('./map-layer-config')
