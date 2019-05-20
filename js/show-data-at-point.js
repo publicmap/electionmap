@@ -11,66 +11,58 @@ function showDataAtPoint(map, e) {
   // Create object to hold query results of map features at a point
   var featuresAtPoint = {lngLat:e.lngLat};
 
-  // Query rendered features at clicked point and store results into an object
-  map.queryRenderedFeatures(e.point, {
-    layers: mapLayers["click-layer-ids"]
-  }).forEach(feature => {
-    featuresAtPoint[feature.sourceLayer] = feature;
-  })
-
-  // Add marker at clicked location
+  // Add a map marker at clicked location and move the map to center it
   Markers.addMarker(map, e);
-
   map.flyTo({
     center: [e.lngLat.lng, e.lngLat.lat]
   })
 
-  // If event object has tile features from clicked event, use it to update the info panel
-  // Else fetch the features at that point using the tilequery API
-  if (Object.keys(featuresAtPoint>1)) {
-    updateInfoPanel(map, featuresAtPoint);
-  } else {
-    // use fetch to fetch data - this maintains consistency with using fetch elsewhere
-    // if we have browser considerations where `fetch` does not work,
-    // we can replace this with $.getJSON or so
-    const tilequeryURL = getTilequeryURL(e.lngLat)
-    function fetchFeaturesAtPoint(lngLat){
-      var fetchCalls = []
-      mapLayers['click-layer-tileset-ids'].forEach(tileset=>{
-        fetchCalls.push(fetch(`https://api.mapbox.com/v4/${tileset}/tilequery/${lngLat.lng},${lngLat.lat}.json?limit=5&radius=0&dedupe=true&access_token=${mapboxgl.accessToken}`))
-      })
-      return fetchCalls
-
-    }
-    fetchFeaturesAtPoint(e.lngLat)
-      .then(response => response.json())
-      .then(data => {
-
-        // merge the damn properies
-        // var holder = Object.assign({}, data.features[0].properties, data.features[1].properties);
-
-        var featuresAtPoint = {}
-        data.features.forEach(feature => {
-          featuresAtPoint[feature.properties.tilequery.layer] = feature;
-        });
-
-        console.log('from API:',featuresAtPoint)
-
-        updateInfoPanel(map, featuresAtPoint);
-
-      })
-      .catch(err => {
-        document.getElementById('infoPanel').classList.remove('loading');
-        document.getElementById('infoPanel').innerHTML = `Error while fetching data for that location`;
-      })
+  // Detect if there is a screen point location from a click event, in which case we can query the 
+  // visible tile layers directly instead of using a request to the tilequery API
+  if(e.point !== undefined){
+    map.queryRenderedFeatures(e.point, {
+      layers: mapLayers["click-layer-ids"]
+    }).forEach(feature => {
+      featuresAtPoint[feature.sourceLayer] = feature;
+    })
   }
-}
 
-var activeFeatureId = null;
+  // If not successful in getting the results directly from loaded tiles
+  // fetch the features at that point using the tilequery API
+  if (Object.keys(featuresAtPoint).length == 1) {
+
+    // Fetch features from the array of tileset ids using the Mapbox tilequery API
+    // Create an array of tilequery  urls and fetch them using promises
+    var fetchRequests = mapLayers['click-layer-tileset-ids'].map(tileset =>
+      // Mapbox tilequery API: https://docs.mapbox.com/help/interactive-tools/tilequery-api-playground/
+      fetch(`https://api.mapbox.com/v4/${tileset}/tilequery/${e.lngLat.lng},${e.lngLat.lat}.json?limit=5&radius=0&dedupe=true&access_token=${mapboxgl.accessToken}`)
+      .then(resp => resp.json())
+    )
+
+    // Fetch and bundle all the results
+    Promise.all(fetchRequests)
+    .then(response => {
+      // Add all features from the tilequery results to the result object
+      response.forEach(featureCollection => {
+        featureCollection.features.forEach(feature => {
+          featuresAtPoint[feature.properties.tilequery.layer] = feature;
+        })
+      });
+
+      // Update panel with results
+      updateInfoPanel(map, featuresAtPoint);
+
+    })
+  }else{
+    // Update panel with results
+    updateInfoPanel(map, featuresAtPoint);
+  }
+
+}
 
 function updateInfoPanel(map, featuresAtPoint) {
 
-  console.log('Features at Point:', featuresAtPoint);
+  console.log('Features at queries point:', featuresAtPoint);
 
   // Add a loading spinner to the infoPanel while we fetch data
   document.getElementById('infoPanel').innerHTML = '';
