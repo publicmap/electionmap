@@ -82,5 +82,5 @@ function locateUser(map, showDataAtPoint) {
 
         }
       })
-  }, 0)
+  }, 2000)
 }

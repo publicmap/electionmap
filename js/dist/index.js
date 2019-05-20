@@ -310,70 +310,34 @@ module.exports = {
     // Queryable feature layers on click
     // for the queries to work, then need to be visible in the map style
     // to make innvisible queryable layers, set the paint opacity to 0
-    'click-layer-ids': ['pc fill mask'],
+    'click-layer-ids': ['pc fill mask','ac fill mask'],
     // Corresponding tileset ids for feature querying
     'click-layer-tileset-ids': ['planemad.3picr4b8']
 }
 },{}],9:[function(require,module,exports){
-if (typeof Object.assign != 'function') {
-  console.log('This polyfill for Object.assign command is being run in a browser that has an incompatibility issue. See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/assign#Browser_compatibility .');
-  // Must be writable: true, enumerable: false, configurable: true
-  Object.defineProperty(Object, "assign", {
-    value: function assign(target, varArgs) { // .length of function is 2
-      'use strict';
-      if (target == null) { // TypeError if undefined or null
-        throw new TypeError('Cannot convert undefined or null to object');
-      }
+module.exports = queryLayerFeatures;
 
-      var to = Object(target);
+// Mapbox GL utility function to query for features at a point 
+// Extends queryRenderedFeatures by using the tilequery API to fetch features not in view
+function queryLayerFeatures(map, location, layers, cb, options) {
 
-      for (var index = 1; index < arguments.length; index++) {
-        var nextSource = arguments[index];
-
-        if (nextSource != null) { // Skip over if undefined or null
-          for (var nextKey in nextSource) {
-            // Avoid bugs when hasOwnProperty is shadowed
-            if (Object.prototype.hasOwnProperty.call(nextSource, nextKey)) {
-              to[nextKey] = nextSource[nextKey];
-            }
-          }
-        }
-      }
-      return to;
-    },
-    writable: true,
-    configurable: true
-  });
-}
-
-},{}],10:[function(require,module,exports){
-var ECILookup = require('./ECILookup')
-var Markers = require('./add-marker')
-var mapLayers = require('./map-layer-config')
-require('./object-assign-polyfill')
-
-module.exports = showDataAtPoint
-
-function showDataAtPoint(map, e) {
+  // Find the tileset ids of the layers
+  var tilesetIds = []
+  layers.forEach(layer=>{
+    // Extract the tileset id from the source id
+    tilesetIds.push(map.getLayer(layer).source.slice(9));
+  })
+  tilesetIds = [...new Set(tilesetIds)];
 
   // Create object to hold query results of map features at a point
-  var featuresAtPoint = {lngLat:e.lngLat};
+  var featuresAtPoint = {queryLocation: location};
 
-  // Add a map marker at clicked location and move the map to center it
-  Markers.addMarker(map, e);
-  map.flyTo({
-    center: [e.lngLat.lng, e.lngLat.lat]
+  // Attempt to query the visible tile layers directly instead of using a request to the tilequery API
+  map.queryRenderedFeatures(map.project(location), {
+    layers: layers
+  }).forEach(feature => {
+    featuresAtPoint[feature.sourceLayer] = feature;
   })
-
-  // Detect if there is a screen point location from a click event, in which case we can query the 
-  // visible tile layers directly instead of using a request to the tilequery API
-  if(e.point !== undefined){
-    map.queryRenderedFeatures(e.point, {
-      layers: mapLayers["click-layer-ids"]
-    }).forEach(feature => {
-      featuresAtPoint[feature.sourceLayer] = feature;
-    })
-  }
 
   // If not successful in getting the results directly from loaded tiles
   // fetch the features at that point using the tilequery API
@@ -381,9 +345,9 @@ function showDataAtPoint(map, e) {
 
     // Fetch features from the array of tileset ids using the Mapbox tilequery API
     // Create an array of tilequery  urls and fetch them using promises
-    var fetchRequests = mapLayers['click-layer-tileset-ids'].map(tileset =>
+    var fetchRequests = tilesetIds.map(tileset =>
       // Mapbox tilequery API: https://docs.mapbox.com/help/interactive-tools/tilequery-api-playground/
-      fetch(`https://api.mapbox.com/v4/${tileset}/tilequery/${e.lngLat.lng},${e.lngLat.lat}.json?limit=5&radius=0&dedupe=true&access_token=${mapboxgl.accessToken}`)
+      fetch(`https://api.mapbox.com/v4/${tileset}/tilequery/${location.lng},${location.lat}.json?limit=5&radius=0&dedupe=true&access_token=${mapboxgl.accessToken}`)
       .then(resp => resp.json())
     )
 
@@ -398,19 +362,40 @@ function showDataAtPoint(map, e) {
       });
 
       // Update panel with results
-      updateInfoPanel(map, featuresAtPoint);
+      cb(map, featuresAtPoint);
 
     })
   }else{
     // Update panel with results
-    updateInfoPanel(map, featuresAtPoint);
+    cb(map, featuresAtPoint);
   }
+
+  return featuresAtPoint;
+
+}
+},{}],10:[function(require,module,exports){
+var ECILookup = require('./ECILookup')
+var Markers = require('./add-marker')
+var mapLayers = require('./map-layer-config')
+var queryLayerFeatures = require('./query-layer-features')
+
+module.exports = showDataAtPoint
+
+function showDataAtPoint(map, e) {
+
+  // Add a map marker at clicked location and move the map to center it
+  Markers.addMarker(map, e);
+  map.flyTo({
+    center: [e.lngLat.lng, e.lngLat.lat]
+  })
+
+  queryLayerFeatures(map,e.lngLat,mapLayers["click-layer-ids"], updateInfoPanel)
 
 }
 
 function updateInfoPanel(map, featuresAtPoint) {
 
-  console.log('Features at queries point:', featuresAtPoint);
+  console.log('Features at queried point:', featuresAtPoint);
 
   // Add a loading spinner to the infoPanel while we fetch data
   document.getElementById('infoPanel').innerHTML = '';
@@ -445,4 +430,4 @@ function updateInfoPanel(map, featuresAtPoint) {
   });
 
 }
-},{"./ECILookup":1,"./add-marker":3,"./map-layer-config":8,"./object-assign-polyfill":9}]},{},[6]);
+},{"./ECILookup":1,"./add-marker":3,"./map-layer-config":8,"./query-layer-features":9}]},{},[6]);
