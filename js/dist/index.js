@@ -1,6 +1,41 @@
 (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 module.exports = {"1":{"ECI_code":"S09","state":"Jammu & Kashmir"},"2":{"ECI_code":"S08","state":"Himachal Pradesh"},"3":{"ECI_code":"S19","state":"Punjab"},"4":{"ECI_code":"U02","state":"Chandigarh"},"5":{"ECI_code":"S28","state":"Uttarakhand"},"6":{"ECI_code":"S07","state":"Haryana"},"7":{"ECI_code":"U05","state":"NCT OF Delhi"},"8":{"ECI_code":"S20","state":"Rajasthan"},"9":{"ECI_code":"S24","state":"Uttar Pradesh"},"10":{"ECI_code":"S04","state":"Bihar"},"11":{"ECI_code":"S21","state":"Sikkim"},"12":{"ECI_code":"S02","state":"Arunachal Pradesh"},"13":{"ECI_code":"S17","state":"Nagaland"},"14":{"ECI_code":"S14","state":"Manipur"},"15":{"ECI_code":"S16","state":"Mizoram"},"16":{"ECI_code":"S23","state":"Tripura"},"17":{"ECI_code":"S15","state":"Meghalaya"},"18":{"ECI_code":"S03","state":"Assam"},"19":{"ECI_code":"S25","state":"West Bengal"},"20":{"ECI_code":"S27","state":"Jharkhand"},"21":{"ECI_code":"S18","state":"Odisha"},"22":{"ECI_code":"S26","state":"Chhattisgarh"},"23":{"ECI_code":"S12","state":"Madhya Pradesh"},"24":{"ECI_code":"S06","state":"Gujarat"},"25":{"ECI_code":"U04","state":"Daman & Diu"},"26":{"ECI_code":"U03","state":"Dadra & Nagar Haveli"},"27":{"ECI_code":"S13","state":"Maharashtra"},"29":{"ECI_code":"S10","state":"Karnataka"},"30":{"ECI_code":"S05","state":"Goa"},"31":{"ECI_code":"U06","state":"Lakshadweep"},"32":{"ECI_code":"S11","state":"Kerala"},"33":{"ECI_code":"S22","state":"Tamil Nadu"},"34":{"ECI_code":"U07","state":"Puducherry"},"35":{"ECI_code":"U01","state":"Andaman & Nicobar Islands"},"36":{"ECI_code":"S29","state":"Telangana"},"37":{"ECI_code":"S01","state":"Andhra Pradesh"}};
 },{}],2:[function(require,module,exports){
+var mapLayers = require('./map-layer-config')
+var ECILookup = require('./ECILookup')
+// var mapLayers = {}
+
+
+module.exports = addMapLayers
+
+// Add styling to map layers to show active and hover constituencies
+
+function addMapLayers(map) {
+
+    map.setPaintProperty('pc line border-highlight', 'line-color', [
+        "match", ["feature-state", "state"], 'active',
+        "hsl(62, 97%, 61%)",
+        "hsl(22, 98%, 92%)"
+    ])
+
+    map.setPaintProperty('pc line border-highlight', 'line-gap-width', [
+        "match", ["feature-state", "state"], 'active',
+        1,
+        "match", ["feature-state", "state"], 'hover',
+        0,
+        0
+    ])
+
+    map.setPaintProperty('pc fill mask', 'fill-opacity', [
+        "match", ["feature-state", "state"], 'active',
+        0,
+        "match", ["feature-state", "state"], 'hover',
+        0.2,
+        0.6
+    ])
+
+}
+},{"./ECILookup":1,"./map-layer-config":8}],3:[function(require,module,exports){
 /**
  * Mapbox Marker
  * Add a marker upon user click
@@ -36,37 +71,15 @@ function userHasClicked() {
 
 module.exports = { addMarker, userHasClicked, };
 
-},{}],3:[function(require,module,exports){
-module.exports = addStyleLayers
-
-// Add styling to map layers to show active and hover constituencies
-
-function addStyleLayers(map) {
-
-    map.setPaintProperty('pc line border-highlight', 'line-color', [
-        "match", ["feature-state", "state"], 'active',
-        "hsl(62, 97%, 61%)",
-        "hsl(22, 98%, 92%)"
-    ])
-
-    map.setPaintProperty('pc line border-highlight', 'line-gap-width', [
-        "match", ["feature-state", "state"], 'active',
-        1,
-        "match", ["feature-state", "state"], 'hover',
-        0,
-        0
-    ])
-
-    map.setPaintProperty('pc fill mask', 'fill-opacity', [
-        "match", ["feature-state", "state"], 'active',
-        0,
-        "match", ["feature-state", "state"], 'hover',
-        0.2,
-        0.6
-    ])
-
-}
 },{}],4:[function(require,module,exports){
+module.exports = addSpreadsheetData;
+
+// https://docs.google.com/spreadsheets/d/e/2PACX-1vS28qKU6gXipgNSwla32jCSh4UhCzcg9VE9GgPfjDVu56wTW-gbLZiWI1xrK6xmKbl2LwAO3Ib9ThsZ/pub?output=csv
+
+// https://docs.google.com/spreadsheets/d/e/2PACX-1vS28qKU6gXipgNSwla32jCSh4UhCzcg9VE9GgPfjDVu56wTW-gbLZiWI1xrK6xmKbl2LwAO3Ib9ThsZ/pub?gid=1578100145&single=true&output=csv
+function addSpreadsheetData() {
+}
+},{}],5:[function(require,module,exports){
 /*
  * Mapbox GL Tools - Add Default Mapbox Controls
  * Adds a set of UI controls for Mapbox Maps
@@ -115,48 +128,32 @@ function addMapControls(map, accessToken, options) {
 
 module.exports = addMapControls;
 
-},{}],5:[function(require,module,exports){
-module.exports = getTilequeryURL
-
-function getTilequeryURL (lngLat) {
-  return `https://api.mapbox.com/v4/planemad.3picr4b8/tilequery/${lngLat.lng},${lngLat.lat}.json?limit=5&radius=0&dedupe=true&access_token=${mapboxgl.accessToken}`
-}
 },{}],6:[function(require,module,exports){
 'use strict';
 
 var addMapControls = require('./addMapControls')
 var showDataAtPoint = require('./show-data-at-point')
 var locateUser = require('./locate-user')
-var addStyleLayers = require('./add-style-layers')
+var mapLayers = require('./map-layer-config')
+var addMapLayers = require('./add-map-layers')
+var addSpreadsheetData = require('./add-spreadsheet-data')
 
 // Enable Mapbox services
-mapboxgl.accessToken = 'pk.eyJ1IjoicGxhbmVtYWQiLCJhIjoiY2p1M3JuNnRjMGZ2NzN6bGVqN3Z4bmVtOSJ9.Fx0kmfg-7ll2Oi-7ZVJrfQ';
-
-// App configuration
-const _app = {
-  map: {
-    init: {
-      container: 'map',
-      style: 'mapbox://styles/planemad/cjoescdh20cl62spey0zj3v19',
-      bounds: [66, 7, 99, 37],
-      maxBounds: [50, 5, 114, 40],
-      pitchWithRotate: false,
-      hash: true
-    }
-  }
-}
+mapboxgl.accessToken = mapLayers['access-token'];
 
 // Initialize GL map
-var map = new mapboxgl.Map(_app.map.init);
+var map = new mapboxgl.Map(mapLayers.map);
 
 map.on('load', () => {
 
   // Setup map layers for styling
-  addStyleLayers(map);
+  addMapLayers(map);
+
+  // Load additional attributes from spreadsheet
+  addSpreadsheetData();
 
   // Find user location
-  locateUser(map);
-  document.getElementById('about-modal').style.display='none'
+  locateUser(map, showDataAtPoint);
 
   // Add map UI controls
   addMapControls(map, mapboxgl.accessToken, {
@@ -169,16 +166,9 @@ map.on('load', () => {
 
   //Define map interactivity
 
-  map.on('click', 'pc fill mask', (e) => {
+  map.on('click', mapLayers["click-layer-ids"][0], (e) => {
 
-    // Package the features at clicked location to resemble a tilequery result
-    e.tileFeatures = {
-      'ac': {},
-      'pc': e.features[0],
-      'schedule': {}
-    }
-
-    // Show constituency details at location
+    // Show details of map features at location
     showDataAtPoint(map, e)
 
   })
@@ -218,37 +208,46 @@ map.on('load', () => {
   // })
 
 });
-},{"./add-style-layers":3,"./addMapControls":4,"./locate-user":7,"./show-data-at-point":9}],7:[function(require,module,exports){
-var showDataAtPoint = require('./show-data-at-point')
+},{"./add-map-layers":2,"./add-spreadsheet-data":4,"./addMapControls":5,"./locate-user":7,"./map-layer-config":8,"./show-data-at-point":10}],7:[function(require,module,exports){
 var Markers = require('./add-marker');
+var mapLayers = require('./map-layer-config')
+
 var browserLocated = false
 
 module.exports = locateUser
 
 function errorHandler(err) {
-  console.log('error getting user location', err)
+  console.log('Error getting accurate user location', err)
 }
 
-function locateUser(map) {
+function locateUser(map, showDataAtPoint) {
 
-  function showLocation(position) {
+  // Checks if a given point is within the default map area
+  function isPointWithinBounds(lngLat){
+    if (lngLat.lng > mapLayers.map.bounds[0] && lngLat.lng < mapLayers.map.bounds[2] && lngLat.lat > mapLayers.map.bounds[1] && lngLat.lat < mapLayers.map.bounds[3]) {
+      return true;
+    }else{
+      return false;
+    }
+  }
+
+  // Display user location on the map
+  function showLocation(lngLat) {
 
     // User has an active location clicked and thus we don't need Browser Geolocation
     if (Markers.userHasClicked()) {
       return;
     }
 
-    browserLocated = true
-
-    var lngLat = {
-      lng: position.coords.longitude,
-      lat: position.coords.latitude
-    }
-
-    // Abort if user coordinate is outside India
-    if (!(lngLat.lng > 63 && lngLat.lng < 97 && lngLat.lat > 7 && lngLat.lat < 36)) {
+    // Abort if user coordinate is outside map area
+    if (!isPointWithinBounds(lngLat)) {
       return
     }
+
+    map.flyTo({
+      center: [lngLat.lng, lngLat.lat],
+      zoom: 9
+    });
 
     showDataAtPoint(map, {
       lngLat: lngLat
@@ -256,12 +255,20 @@ function locateUser(map) {
 
   }
 
-  if (navigator.geolocation) {
+  // Try to determinne accurate user locationn using HTML5 geolocation
+  if (navigator.geolocation && !Markers.userHasClicked()) {
     // timeout at 60000 milliseconds (60 seconds)
     var options = {
+      enableHighAccuracy: true,
       timeout: 60000
     }
-    navigator.geolocation.getCurrentPosition(showLocation, errorHandler, options)
+    function showGeoLocation(postion){
+      showLocation({
+        lng: position.coords.longitude,
+        lat: position.coords.latitude
+      })
+    }
+    navigator.geolocation.getCurrentPosition(showGeoLocation, errorHandler, options)
   } else {
     console.log("Browser does not support geolocation!")
   }
@@ -277,136 +284,134 @@ function locateUser(map) {
       .then(body => {
         if (!browserLocated && !Markers.userHasClicked()) {
 
-          var lngLat = {
+          browserLocated = true
+
+          showLocation({
             lng: body.longitude,
             lat: body.latitude
-          }
-
-          // Abort if user coordinate is outside India
-          if (!(lngLat.lng > 63 && lngLat.lng < 97 && lngLat.lat > 7 && lngLat.lat < 36)) {
-            return
-          }
-
-          showDataAtPoint(map, {
-            lngLat: lngLat
           })
-
-          map.flyTo({
-            center: [lngLat.lng, lngLat.lat],
-            zoom: 9
-          });
 
         }
       })
   }, 2000)
 }
-},{"./add-marker":2,"./show-data-at-point":9}],8:[function(require,module,exports){
-if (typeof Object.assign != 'function') {
-  console.log('This polyfill for Object.assign command is being run in a browser that has an incompatibility issue. See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/assign#Browser_compatibility .');
-  // Must be writable: true, enumerable: false, configurable: true
-  Object.defineProperty(Object, "assign", {
-    value: function assign(target, varArgs) { // .length of function is 2
-      'use strict';
-      if (target == null) { // TypeError if undefined or null
-        throw new TypeError('Cannot convert undefined or null to object');
-      }
-
-      var to = Object(target);
-
-      for (var index = 1; index < arguments.length; index++) {
-        var nextSource = arguments[index];
-
-        if (nextSource != null) { // Skip over if undefined or null
-          for (var nextKey in nextSource) {
-            // Avoid bugs when hasOwnProperty is shadowed
-            if (Object.prototype.hasOwnProperty.call(nextSource, nextKey)) {
-              to[nextKey] = nextSource[nextKey];
-            }
-          }
-        }
-      }
-      return to;
-    },
-    writable: true,
-    configurable: true
-  });
+},{"./add-marker":3,"./map-layer-config":8}],8:[function(require,module,exports){
+module.exports = {
+    'access-token' :'pk.eyJ1IjoicGxhbmVtYWQiLCJhIjoiY2p1M3JuNnRjMGZ2NzN6bGVqN3Z4bmVtOSJ9.Fx0kmfg-7ll2Oi-7ZVJrfQ',
+     // Map innitialization
+     map: {
+        container: 'map',
+        style: 'mapbox://styles/planemad/cjoescdh20cl62spey0zj3v19',
+        bounds: [66, 7, 99, 37],
+        maxBounds: [50, 5, 114, 40],
+        pitchWithRotate: false,
+        hash: true
+      },
+    // Queryable feature layers on click
+    // for the queries to work, then need to be visible in the map style
+    // to make innvisible queryable layers, set the paint opacity to 0
+    'click-layer-ids': ['pc fill mask','ac fill mask'],
+    // Corresponding tileset ids for feature querying
+    'click-layer-tileset-ids': ['planemad.3picr4b8']
 }
-
 },{}],9:[function(require,module,exports){
-var getTilequeryURL = require('./get-tilequery-url')
+module.exports = queryLayerFeatures;
+
+// Mapbox GL utility function to query for features at a point 
+// Extends queryRenderedFeatures by using the tilequery API to fetch features not in view
+function queryLayerFeatures(map, latLng, layers, cb, options) {
+
+  // Find the tileset ids of the layers
+  var tilesetIds = []
+  layers.forEach(layer => {
+    // Extract the tileset id from the source id
+    tilesetIds.push(map.getLayer(layer).source.slice(9));
+  })
+  tilesetIds = [...new Set(tilesetIds)];
+
+  // Create object to hold query results of map features at a point
+  var featuresAtPoint = {queryLocation: latLng};
+
+  // Attempt to query the visible tile layers directly instead of using a request to the tilequery API
+  map.queryRenderedFeatures(map.project(latLng), {
+    layers: layers
+  }).forEach(feature => {
+    featuresAtPoint[feature.sourceLayer] = feature;
+  })
+
+  // If not successful in getting the results directly from loaded tiles
+  // fetch the features at that point using the tilequery API
+  if (Object.keys(featuresAtPoint).length == 1) {
+
+    // Fetch features from the array of tileset ids using the Mapbox tilequery API
+    // Create an array of tilequery  urls and fetch them using promises
+    var fetchRequests = tilesetIds.map(tileset =>
+      // Mapbox tilequery API: https://docs.mapbox.com/help/interactive-tools/tilequery-api-playground/
+      fetch(`https://api.mapbox.com/v4/${tileset}/tilequery/${latLng.lng},${latLng.lat}.json?limit=5&radius=0&dedupe=true&access_token=${mapboxgl.accessToken}`)
+      .then(resp => resp.json())
+    )
+
+    // Fetch and bundle all the results
+    Promise.all(fetchRequests)
+    .then(response => {
+      // Add all features from the tilequery results to the result object
+      response.forEach(featureCollection => {
+        featureCollection.features.forEach(feature => {
+          featuresAtPoint[feature.properties.tilequery.layer] = feature;
+        })
+      });
+
+      // Update panel with results
+      cb(map, featuresAtPoint);
+
+    })
+  }else{
+    // Update panel with results
+    cb(map, featuresAtPoint);
+  }
+
+  return featuresAtPoint;
+
+}
+},{}],10:[function(require,module,exports){
 var ECILookup = require('./ECILookup')
-var Markers = require('./add-marker');
-require('./object-assign-polyfill')
+var Markers = require('./add-marker')
+var mapLayers = require('./map-layer-config')
+var queryLayerFeatures = require('./query-layer-features')
 
 module.exports = showDataAtPoint
 
 function showDataAtPoint(map, e) {
 
-  // Query rendered features at clicked point
-  var features = map.queryRenderedFeatures(e.point, {
-    layers: ['pc fill mask']
-  })
-
-  // Add marker at clicked location
+  // Add a map marker at clicked location and move the map to center it
   Markers.addMarker(map, e);
-
-  const tilequeryURL = getTilequeryURL(e.lngLat)
-
   map.flyTo({
     center: [e.lngLat.lng, e.lngLat.lat]
   })
 
-  // If event object has tile features from clicked event, use it to update the info panel
-  // Else fetch the features at that point using the tilequery API
-  if (e.tileFeatures != undefined) {
-    updateInfoPanel(map, e.tileFeatures);
-  } else {
-    // use fetch to fetch data - this maintains consistency with using fetch elsewhere
-    // if we have browser considerations where `fetch` does not work,
-    // we can replace this with $.getJSON or so
-    fetch(tilequeryURL)
-      .then(response => response.json())
-      .then(data => {
+  queryLayerFeatures(map,e.lngLat,mapLayers["click-layer-ids"], updateInfoPanel)
 
-        // merge the damn properies
-        // var holder = Object.assign({}, data.features[0].properties, data.features[1].properties);
-
-        var tileFeatures = {}
-        data.features.forEach(feature => {
-          tileFeatures[feature.properties.tilequery.layer] = feature;
-        });
-
-        updateInfoPanel(map, tileFeatures);
-
-      })
-      .catch(err => {
-        document.getElementById('infoPanel').classList.remove('loading');
-        document.getElementById('infoPanel').innerHTML = `Error while fetching data for that location`;
-      })
-  }
 }
 
-var activeFeatureId = null;
+function updateInfoPanel(map, featuresAtPoint) {
 
-function updateInfoPanel(map, tileFeatures) {
-
-  console.log('Constituency details API:', tileFeatures);
+  console.log('Features at queried point:', featuresAtPoint);
 
   // Add a loading spinner to the infoPanel while we fetch data
   document.getElementById('infoPanel').innerHTML = '';
   document.getElementById('infoPanel').classList.add('loading', 'loading--s');
 
-  var ECI_code = ECILookup[String(tileFeatures.pc.properties.st_code)]['ECI_code'];
+  var ECI_code = ECILookup[String(featuresAtPoint.pc.properties.st_code)]['ECI_code'];
 
   // Composing link to Official ECI candidates affidavits page: https://affidavit.eci.gov.in/showaffidavit/1/S13/34/PC
-  var ECIAffidavit_URL = `https://affidavit.eci.gov.in/showaffidavit/1/${ECI_code}/${String(tileFeatures.pc.properties.pc_no)}/PC`;
+  var ECIAffidavit_URL = `https://affidavit.eci.gov.in/showaffidavit/1/${ECI_code}/${String(featuresAtPoint.pc.properties.pc_no)}/PC`;
 
   // Composing info
   var info = `<span class='txt-light'>2019 Lok Sabha Elections</span><br>
-    <span class='txt-light'>Your Constituency: </span><b>${tileFeatures.pc.properties.pc_name}</b> (${tileFeatures.pc.properties.pc_no})<br>
-    <span class='txt-light'>Voting is on: </span><b>${tileFeatures.pc.properties['2019_election_date'].split('T')[0]}</b> (Phase ${tileFeatures.pc.properties['2019_election_phase']})<br>
+    <span class='txt-light'>Your Constituency: </span><b>${featuresAtPoint.pc.properties.pc_name}</b> (${featuresAtPoint.pc.properties.pc_no})<br>
+    <span class='txt-light'>Voting is on: </span><b>${featuresAtPoint.pc.properties['2019_election_date'].split('T')[0]}</b> (Phase ${featuresAtPoint.pc.properties['2019_election_phase']})<br>
     <a href="${ECIAffidavit_URL}" target="_blank" class="link">Click here to see the Candidates</a> <br>
-    State: ${tileFeatures.pc.properties.st_name} (${ECI_code})<br>
+    State: ${featuresAtPoint.pc.properties.st_name} (${ECI_code})<br>
     `;
   document.getElementById('infoPanel').classList.remove('loading');
   document.getElementById('infoPanel').innerHTML = info;
@@ -419,10 +424,10 @@ function updateInfoPanel(map, tileFeatures) {
   map.setFeatureState({
     source: 'mapbox://planemad.3picr4b8',
     sourceLayer: 'pc',
-    id: tileFeatures.pc.id
+    id: featuresAtPoint.pc.id
   }, {
     state: 'active'
   });
 
 }
-},{"./ECILookup":1,"./add-marker":2,"./get-tilequery-url":5,"./object-assign-polyfill":8}]},{},[6]);
+},{"./ECILookup":1,"./add-marker":3,"./map-layer-config":8,"./query-layer-features":9}]},{},[6]);

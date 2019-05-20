@@ -1,77 +1,41 @@
-var getTilequeryURL = require('./get-tilequery-url')
 var ECILookup = require('./ECILookup')
-var Markers = require('./add-marker');
-require('./object-assign-polyfill')
+var Markers = require('./add-marker')
+var mapLayers = require('./map-layer-config')
+var queryLayerFeatures = require('./query-layer-features')
 
 module.exports = showDataAtPoint
 
 function showDataAtPoint(map, e) {
 
-  // Query rendered features at clicked point
-  var features = map.queryRenderedFeatures(e.point, {
-    layers: ['pc fill mask']
-  })
-
-  // Add marker at clicked location
+  // Add a map marker at clicked location and move the map to center it
   Markers.addMarker(map, e);
-
-  const tilequeryURL = getTilequeryURL(e.lngLat)
-
   map.flyTo({
     center: [e.lngLat.lng, e.lngLat.lat]
   })
 
-  // If event object has tile features from clicked event, use it to update the info panel
-  // Else fetch the features at that point using the tilequery API
-  if (e.tileFeatures != undefined) {
-    updateInfoPanel(map, e.tileFeatures);
-  } else {
-    // use fetch to fetch data - this maintains consistency with using fetch elsewhere
-    // if we have browser considerations where `fetch` does not work,
-    // we can replace this with $.getJSON or so
-    fetch(tilequeryURL)
-      .then(response => response.json())
-      .then(data => {
+  queryLayerFeatures(map,e.lngLat,mapLayers["click-layer-ids"], updateInfoPanel)
 
-        // merge the damn properies
-        // var holder = Object.assign({}, data.features[0].properties, data.features[1].properties);
-
-        var tileFeatures = {}
-        data.features.forEach(feature => {
-          tileFeatures[feature.properties.tilequery.layer] = feature;
-        });
-
-        updateInfoPanel(map, tileFeatures);
-
-      })
-      .catch(err => {
-        document.getElementById('infoPanel').classList.remove('loading');
-        document.getElementById('infoPanel').innerHTML = `Error while fetching data for that location`;
-      })
-  }
 }
 
-var activeFeatureId = null;
+function updateInfoPanel(map, featuresAtPoint) {
 
-function updateInfoPanel(map, tileFeatures) {
-
-  console.log('Constituency details API:', tileFeatures);
+  console.log('Features at queried point:', featuresAtPoint);
 
   // Add a loading spinner to the infoPanel while we fetch data
   document.getElementById('infoPanel').innerHTML = '';
   document.getElementById('infoPanel').classList.add('loading', 'loading--s');
 
-  var ECI_code = ECILookup[String(tileFeatures.pc.properties.st_code)]['ECI_code'];
+  var ECI_code = ECILookup[String(featuresAtPoint.pc.properties.st_code)]['ECI_code'];
 
   // Composing link to Official ECI candidates affidavits page: https://affidavit.eci.gov.in/showaffidavit/1/S13/34/PC
-  var ECIAffidavit_URL = `https://affidavit.eci.gov.in/showaffidavit/1/${ECI_code}/${String(tileFeatures.pc.properties.pc_no)}/PC`;
+  var ECIAffidavit_URL = `https://affidavit.eci.gov.in/showaffidavit/1/${ECI_code}/${String(featuresAtPoint.pc.properties.pc_no)}/PC`;
 
   // Composing info
   var info = `<span class='txt-light'>2019 Lok Sabha Elections</span><br>
-    <span class='txt-light'>Your Constituency: </span><b>${tileFeatures.pc.properties.pc_name}</b> (${tileFeatures.pc.properties.pc_no})<br>
-    <span class='txt-light'>Voting is on: </span><b>${tileFeatures.pc.properties['2019_election_date'].split('T')[0]}</b> (Phase ${tileFeatures.pc.properties['2019_election_phase']})<br>
+    <span class='txt-light'>Your Constituency: </span><b>${featuresAtPoint.pc.properties.pc_name}</b> (${featuresAtPoint.pc.properties.pc_no})<br>
+    <span class='txt-light'>Voting is on: </span><b>${featuresAtPoint.pc.properties['2019_election_date'].split('T')[0]}</b> (Phase ${featuresAtPoint.pc.properties['2019_election_phase']})<br>
     <a href="${ECIAffidavit_URL}" target="_blank" class="link">Click here to see the Candidates</a> <br>
-    State: ${tileFeatures.pc.properties.st_name} (${ECI_code})<br>
+    State: ${featuresAtPoint.pc.properties.st_name} (${ECI_code})<br>
     `;
   document.getElementById('infoPanel').classList.remove('loading');
   document.getElementById('infoPanel').innerHTML = info;
@@ -84,7 +48,7 @@ function updateInfoPanel(map, tileFeatures) {
   map.setFeatureState({
     source: 'mapbox://planemad.3picr4b8',
     sourceLayer: 'pc',
-    id: tileFeatures.pc.id
+    id: featuresAtPoint.pc.id
   }, {
     state: 'active'
   });

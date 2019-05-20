@@ -1,3 +1,8 @@
+var mapLayers = require('./map-layer-config')
+var ECILookup = require('./ECILookup')
+// var mapLayers = {}
+
+
 module.exports = addMapLayers
 
 // Add styling to map layers to show active and hover constituencies
