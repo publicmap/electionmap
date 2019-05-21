@@ -38,9 +38,7 @@ function locateUser(map, showDataAtPoint) {
       zoom: 9
     });
 
-    showDataAtPoint(map, {
-      lngLat: lngLat
-    })
+    showDataAtPoint(map, lngLat)
 
   }
 

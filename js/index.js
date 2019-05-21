@@ -38,7 +38,7 @@ map.on('load', () => {
   map.on('click', mapLayers["click-layer-ids"][0], (e) => {
 
     // Show details of map features at location
-    showDataAtPoint(map, e)
+    showDataAtPoint(map, e.lngLat)
 
   })
 

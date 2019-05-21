@@ -5,15 +5,15 @@ var queryLayerFeatures = require('./query-layer-features')
 
 module.exports = showDataAtPoint
 
-function showDataAtPoint(map, e) {
+function showDataAtPoint(map, lngLat) {
 
   // Add a map marker at clicked location and move the map to center it
-  Markers.addMarker(map, e);
+  Markers.addMarker(map, lngLat);
   map.flyTo({
-    center: [e.lngLat.lng, e.lngLat.lat]
+    center: lngLat
   })
 
-  queryLayerFeatures(map,e.lngLat,mapLayers["click-layer-ids"], updateInfoPanel)
+  queryLayerFeatures(map,lngLat,mapLayers["click-layer-ids"], updateInfoPanel)
 
 }
 
