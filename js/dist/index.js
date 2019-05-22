@@ -287,6 +287,7 @@ function locateUser(map, geolocateControl, {
 
     // Abort if user coordinate is outside map area
     if (!isPointWithinBounds(lngLat)) {
+      console.log('Geolocate is outside map area', lngLat, options);
       return
     }
 
@@ -301,6 +302,32 @@ function locateUser(map, geolocateControl, {
     
     // On finding GPS location
   geolocateControl.trigger();
+
+  // Handle geolocation outside map area
+  // https://bl.ocks.org/andrewharvey/6c6282db4a7c9b316ebd51421160c5e4
+  (function() {
+    var proxied = geolocateControl._updateCamera;
+    geolocateControl._updateCamera = function() {
+        // get geolocation
+        var location = new mapboxgl.LngLat(arguments[0].coords.longitude, arguments[0].coords.latitude);
+
+        var bounds = map.getMaxBounds();
+
+        if (bounds) {
+            // if geolocation is within maxBounds
+            var lngLat = {
+              lng: location.longitude,
+              lat: location.latitude
+            }
+            if (isPointWithinBounds(lngLat)) {
+                return proxied.apply( this, arguments );
+            } else {
+                return null;
+            }
+        }
+        return proxied.apply( this, arguments );
+    };
+})();
   geolocateControl.on('geolocate', function(e) {
 
     browserLocated = true;
