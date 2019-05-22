@@ -296,7 +296,7 @@ function locateUser(map, geolocateControl, {
 
   }
 
-  // Try to determinne accurate user location using HTML5 geolocation
+  // Try to determine accurate user location using HTML5 geolocation
   
   if (!Markers.userHasClicked()) {
     

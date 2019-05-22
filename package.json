@@ -1,11 +1,11 @@
 {
   "name": "electionmap",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "A Mapbox GL web app to explore electoral data spatially",
   "main": "index.js",
   "scripts": {
     "start": "budo js/index.js:js/dist/index.js --live --ssl -d",
-    "build": "browserify js/index.js > js/dist/index.js && budo js/dist/index.js --serve=js/dist/index.js --live --ssl -d"
+    "build": "browserify js/index.js > js/dist/index.js"
   },
   "author": "Arun Ganesh, Nikhil VJ, Sanjay Bangar, Srihari Thalla",
   "license": "Unlicense",
