@@ -1,19 +1,25 @@
 var Markers = require('./add-marker');
-var mapLayers = require('./map-layer-config')
+var Fetch = require('fetch-retry');
 
+// Flag set to true after user has been located
 var browserLocated = false
 
 module.exports = locateUser
 
-function errorHandler(err) {
-  console.log('Error getting accurate user location', err)
-}
+// Mapbox GL plugin to locate the user using geolocation or fallback to geoip
 
-function locateUser(map, showDataAtPoint) {
+function locateUser(map, geolocateControl, {
+  bounds = mapLayers.map.bounds,
+  zoom = mapLayers.map.zoom
+}, cb) {
 
-  // Checks if a given point is within the default map area
+  function errorHandler(err) {
+    console.log('Location error:', err);
+  }
+
+  // Checks if a given coordinate is within the default map area
   function isPointWithinBounds(lngLat){
-    if (lngLat.lng > mapLayers.map.bounds[0] && lngLat.lng < mapLayers.map.bounds[2] && lngLat.lat > mapLayers.map.bounds[1] && lngLat.lat < mapLayers.map.bounds[3]) {
+    if (lngLat.lng > bounds[0] && lngLat.lng < bounds[2] && lngLat.lat > bounds[1] && lngLat.lat < bounds[3]) {
       return true;
     }else{
       return false;
@@ -21,7 +27,7 @@ function locateUser(map, showDataAtPoint) {
   }
 
   // Display user location on the map
-  function showLocation(lngLat) {
+  function showLocation(lngLat, options) {
 
     // User has an active location clicked and thus we don't need Browser Geolocation
     if (Markers.userHasClicked()) {
@@ -33,29 +39,31 @@ function locateUser(map, showDataAtPoint) {
       return
     }
 
-    map.flyTo({
-      center: [lngLat.lng, lngLat.lat],
-      zoom: 9
-    });
-
-    showDataAtPoint(map, lngLat)
+    // Callback on success
+    cb(map, lngLat, options)
 
   }
 
-  // Try to determinne accurate user locationn using HTML5 geolocation
-  if (navigator.geolocation && !Markers.userHasClicked()) {
-    // timeout at 60000 milliseconds (60 seconds)
-    var options = {
-      enableHighAccuracy: true,
-      timeout: 60000
-    }
-    function showGeoLocation(postion){
-      showLocation({
-        lng: position.coords.longitude,
-        lat: position.coords.latitude
-      })
-    }
-    navigator.geolocation.getCurrentPosition(showGeoLocation, errorHandler, options)
+  // Try to determinne accurate user location using HTML5 geolocation
+  
+  if (!Markers.userHasClicked()) {
+    
+    // On finding GPS location
+  geolocateControl.trigger();
+  geolocateControl.on('geolocate', function(e) {
+
+    browserLocated = true;
+
+    showLocation({
+      lng: e.coords.longitude,
+      lat: e.coords.latitude
+    }, {
+      source: 'geolocation',
+      accuracy: e.coords.accuracy,
+      details: e.coords
+    })
+  });
+
   } else {
     console.log("Browser does not support geolocation!")
   }
@@ -66,18 +74,38 @@ function locateUser(map, showDataAtPoint) {
   //                      do not display if the user clicked in between
   setTimeout(() => {
     if (browserLocated || Markers.userHasClicked()) return
-    fetch('https://publicmap-freegeoip.herokuapp.com/json/')
+    Fetch('https://publicmap-freegeoip.herokuapp.com/json/',{
+      retries: 3,
+      retryDelay: 100
+    })
+      .then((response)=>{
+        // Catch failed location response
+        if (!response.ok) {
+            throw errorHandler(response.statusText);
+        }
+        return response;
+      })
       .then(response => response.json())
       .then(body => {
         if (!browserLocated && !Markers.userHasClicked()) {
 
-          browserLocated = true
+          browserLocated = true;
 
-          showLocation({
+          var lngLat = {
             lng: body.longitude,
             lat: body.latitude
+          };
+
+          map.flyTo({
+            center: lngLat,
+            zoom: 10
           })
 
+          showLocation(lngLat, {
+            zoom: 10,
+            source: 'geoip',
+            details: body
+          })
         }
       })
   }, 2000)

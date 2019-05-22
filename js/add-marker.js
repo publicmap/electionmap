@@ -20,10 +20,7 @@ function addMarker(map, lngLat) {
   // Add marker on user click
   marker = new mapboxgl.Marker()
     .setLngLat(lngLat)
-    .addTo(map)
-  ;
-
-  map.flyTo({center: lngLat})
+    .addTo(map);
 
 }
 

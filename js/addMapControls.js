@@ -3,7 +3,28 @@
  * Adds a set of UI controls for Mapbox Maps
  */
 
-function addMapControls(map, accessToken, options) {
+function addMapControls(map, accessToken, {
+  geolocate = {
+    zoom : 10
+  },
+  search = {
+    position: 'top-left',
+    countries : undefined,
+    bbox : undefined
+  }
+}) {
+
+  var geolocate = new mapboxgl.GeolocateControl({
+    positionOptions: {
+      enableHighAccuracy: false,
+      timeout: 4000
+    },
+    trackUserLocation: true,
+    fitBoundsOptions: {
+      maxZoom: geolocate.zoom
+    }
+  })
+  map.addControl(geolocate, geolocate.position);
 
   // Add  map UI controls
   var nav = new mapboxgl.NavigationControl();
@@ -14,13 +35,13 @@ function addMapControls(map, accessToken, options) {
       accessToken: accessToken,
 
       // limit results 
-      countries: options.MapboxGeocoder.countries,
+      countries: search.countries,
 
       // further limit results to the geographic bounds representing the region
-      bbox: options.MapboxGeocoder.bbox
+      bbox: search.bbox
 
     });
-    map.addControl(geocoder, options.MapboxGeocoder.position || 'top-left');
+    map.addControl(geocoder, search.position);
 
     // Listen for the `result` event from the MapboxGeocoder that is triggered when a user
     // makes a selection and add a symbol that matches the result.
@@ -38,9 +59,10 @@ function addMapControls(map, accessToken, options) {
   map.addControl(new mapboxgl.FullscreenControl(), 'bottom-right');
 
   return {
-    NavigationControl : nav,
-    MapboxGeocoder : geocoder,
-    ScaleControl : scale
+    geolocate: geolocate,
+    directions : nav,
+    search : geocoder,
+    scale : scale
   }
 }
 
