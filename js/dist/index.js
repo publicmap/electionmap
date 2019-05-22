@@ -58,10 +58,7 @@ function addMarker(map, lngLat) {
   // Add marker on user click
   marker = new mapboxgl.Marker()
     .setLngLat(lngLat)
-    .addTo(map)
-  ;
-
-  map.flyTo({center: lngLat})
+    .addTo(map);
 
 }
 
@@ -153,12 +150,18 @@ module.exports = addMapControls;
 },{}],6:[function(require,module,exports){
 'use strict';
 
+// Map configuration options
+var mapLayers = require('./map-layer-config')
+
 var addMapControls = require('./addMapControls')
 var showDataAtPoint = require('./show-data-at-point')
 var locateUser = require('./locate-user')
-var mapLayers = require('./map-layer-config')
 var addMapLayers = require('./add-map-layers')
 var addSpreadsheetData = require('./add-spreadsheet-data')
+
+//
+// Map initialization
+//
 
 // Enable Mapbox services
 mapboxgl.accessToken = mapLayers['access-token'];
@@ -166,7 +169,20 @@ mapboxgl.accessToken = mapLayers['access-token'];
 // Initialize GL map
 var map = new mapboxgl.Map(mapLayers.map);
 
+// Add map UI controls
+var mapControls = addMapControls(map, mapboxgl.accessToken, {
+  mapConfig: mapLayers.map,
+  search: {
+    position: 'top-right',
+    countries: 'in'
+  }
+});
+
 map.on('load', () => {
+
+  //
+  // Map customizationns
+  //
 
   // Setup map layers for styling
   addMapLayers(map);
@@ -174,43 +190,25 @@ map.on('load', () => {
   // Load additional attributes from spreadsheet
   addSpreadsheetData();
 
-  // Find user location
-  locateUser(map, {
-    bounds : mapLayers.map.bounds,
-    zoom : mapLayers.map.zoom
-  },showDataAtPoint);
+  //
+  // Define map interactivity
+  //
 
-  // Add map UI controls
-  var mapControls = addMapControls(map, mapboxgl.accessToken, {
-    geolocate: {
-      zoom : mapLayers.map.zoom
-    },
-    search: {
-      position: 'top-right',
-      countries: 'in'
-    }
-  });
+  // Find user location
+  locateUser(map, mapControls.geolocate, mapLayers.map, showDataAtPoint);
   
-  mapControls.geolocate.trigger();
-  mapControls.geolocate.on('geolocate', function(e) {
-    showDataAtPoint(map,{
-      lng: e.coords.longitude,
-      lat: e.coords.latitude
-    }, e)
-  });
 
   mapControls.search.on('result', (e)=>{
-    showDataAtPoint(map, { lng: e.result.center[0], lat: e.result.center[1]})
+    showDataAtPoint(map, { lng: e.result.center[0], lat: e.result.center[1]}, e)
   })
   map.touchZoomRotate.disableRotation();
 
-  
-
-  //Define map interactivity
 
   map.on('click', mapLayers["click-layer-ids"][0], (e) => {
 
-    // Show details of map features at location
+    map.flyTo({
+      center: e.lngLat
+    })
     showDataAtPoint(map, e.lngLat)
 
   })
@@ -261,7 +259,7 @@ module.exports = locateUser
 
 // Mapbox GL plugin to locate the user using geolocation or fallback to geoip
 
-function locateUser(map, {
+function locateUser(map, geolocateControl, {
   bounds = mapLayers.map.bounds,
   zoom = mapLayers.map.zoom
 }, cb) {
@@ -270,25 +268,7 @@ function locateUser(map, {
     console.log('Location error:', err);
   }
 
-  // var geolocateControl = new mapboxgl.GeolocateControl({
-  //   positionOptions: {
-  //     enableHighAccuracy: false,
-  //     timeout: 4000
-  //   },
-  //   trackUserLocation: true,
-  //   fitBoundsOptions: {
-  //     maxZoom: zoom
-  //   }
-  // })
-
-  // console.log(map.addControl(geolocateControl, 'top-right'));
-
-  
-
-
-
-
-  // Checks if a given point is within the default map area
+  // Checks if a given coordinate is within the default map area
   function isPointWithinBounds(lngLat){
     if (lngLat.lng > bounds[0] && lngLat.lng < bounds[2] && lngLat.lat > bounds[1] && lngLat.lat < bounds[3]) {
       return true;
@@ -300,8 +280,6 @@ function locateUser(map, {
   // Display user location on the map
   function showLocation(lngLat, options) {
 
-    console.log('Located user at', lngLat, options)
-
     // User has an active location clicked and thus we don't need Browser Geolocation
     if (Markers.userHasClicked()) {
       return;
@@ -312,32 +290,31 @@ function locateUser(map, {
       return
     }
 
-    // map.flyTo({
-    //   center: [lngLat.lng, lngLat.lat],
-    //   zoom: 20
-    // });
-
     // Callback on success
-    cb(map, lngLat)
+    cb(map, lngLat, options)
 
   }
 
   // Try to determinne accurate user location using HTML5 geolocation
-  // setTimeout(geolocateControl.trigger(), 1000)
   
-  if (false && navigator.geolocation && !Markers.userHasClicked()) {
-    // timeout at 60000 milliseconds (60 seconds)
-    var options = {
-      enableHighAccuracy: true,
-      timeout: 60000
-    }
-    function showGeoLocation(position){
-      showLocation({
-        lng: position.coords.longitude,
-        lat: position.coords.latitude
-      }, position)
-    }
-    navigator.geolocation.getCurrentPosition(showGeoLocation, errorHandler, options)
+  if (!Markers.userHasClicked()) {
+    
+    // On finding GPS location
+  geolocateControl.trigger();
+  geolocateControl.on('geolocate', function(e) {
+
+    browserLocated = true;
+
+    showLocation({
+      lng: e.coords.longitude,
+      lat: e.coords.latitude
+    }, {
+      source: 'geolocation',
+      accuracy: e.coords.accuracy,
+      details: e.coords
+    })
+  });
+
   } else {
     console.log("Browser does not support geolocation!")
   }
@@ -348,7 +325,10 @@ function locateUser(map, {
   //                      do not display if the user clicked in between
   setTimeout(() => {
     if (browserLocated || Markers.userHasClicked()) return
-    Fetch('https://publicmap-freegeoip.herokuapp.com/json/')
+    Fetch('https://publicmap-freegeoip.herokuapp.com/json/',{
+      retries: 3,
+      retryDelay: 100
+    })
       .then((response)=>{
         // Catch failed location response
         if (!response.ok) {
@@ -360,11 +340,23 @@ function locateUser(map, {
       .then(body => {
         if (!browserLocated && !Markers.userHasClicked()) {
 
-          browserLocated = true
-          showLocation({
+          browserLocated = true;
+
+          var lngLat = {
             lng: body.longitude,
             lat: body.latitude
-          }, body)
+          };
+
+          map.flyTo({
+            center: lngLat,
+            zoom: 10
+          })
+
+          showLocation(lngLat, {
+            zoom: 10,
+            source: 'geoip',
+            details: body
+          })
         }
       })
   }, 2000)
@@ -385,9 +377,7 @@ module.exports = {
     // Queryable feature layers on click
     // for the queries to work, then need to be visible in the map style
     // to make innvisible queryable layers, set the paint opacity to 0
-    'click-layer-ids': ['pc fill mask','ac fill mask'],
-    // Corresponding tileset ids for feature querying
-    'click-layer-tileset-ids': ['planemad.3picr4b8']
+    'click-layer-ids': ['pc fill mask','ac fill mask']
 }
 },{}],9:[function(require,module,exports){
 module.exports = queryLayerFeatures;
@@ -405,7 +395,7 @@ function queryLayerFeatures(map, latLng, layers, cb, options) {
   tilesetIds = [...new Set(tilesetIds)];
 
   // Create object to hold query results of map features at a point
-  var featuresAtPoint = {queryLocation: latLng};
+  var featuresAtPoint = {queryLngLat: latLng};
 
   // Attempt to query the visible tile layers directly instead of using a request to the tilequery API
   map.queryRenderedFeatures(map.project(latLng), {
@@ -456,21 +446,19 @@ var queryLayerFeatures = require('./query-layer-features')
 
 module.exports = showDataAtPoint
 
-function showDataAtPoint(map, lngLat) {
+function showDataAtPoint(map, lngLat, options) {
+
+  console.log('Location set to:', lngLat, options)
 
   // Add a map marker at clicked location and move the map to center it
   Markers.addMarker(map, lngLat);
-  map.flyTo({
-    center: lngLat
-  })
-
   queryLayerFeatures(map,lngLat,mapLayers["click-layer-ids"], updateInfoPanel)
 
 }
 
 function updateInfoPanel(map, featuresAtPoint) {
 
-  console.log('Features at queried point:', featuresAtPoint);
+  console.log('Features at location:', featuresAtPoint);
 
   // Add a loading spinner to the infoPanel while we fetch data
   document.getElementById('infoPanel').innerHTML = '';
