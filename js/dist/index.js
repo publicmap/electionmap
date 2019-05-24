@@ -120,7 +120,6 @@ function addMapControls(map, accessToken, {
                 location.lat >= bounds.getSouth() && location.lat <= bounds.getNorth()) {
                 return proxied.apply( this, arguments );
             } else {
-                console.log('Geolocate is outside bounds:', location);
                 return null;
             }
         }
@@ -220,7 +219,7 @@ map.on('load', () => {
   //
 
   // Find user location
-  locateUser(map, mapControls.geolocate, mapLayers.map, showDataAtPoint);
+  locateUser(map, mapControls.geolocate, showDataAtPoint);
   
 
   mapControls.search.on('result', (e)=>{
@@ -284,10 +283,7 @@ module.exports = locateUser
 
 // Mapbox GL plugin to locate the user using geolocation or fallback to geoip
 
-function locateUser(map, geolocateControl, {
-  bounds = mapLayers.map.bounds,
-  zoom = mapLayers.map.zoom
-}, cb) {
+function locateUser(map, geolocateControl, cb) {
 
   function errorHandler(err) {
     console.log('Location error:', err);
@@ -295,7 +291,8 @@ function locateUser(map, geolocateControl, {
 
   // Checks if a given coordinate is within the default map area
   function isPointWithinBounds(lngLat){
-    if (lngLat.lng > bounds[0] && lngLat.lng < bounds[2] && lngLat.lat > bounds[1] && lngLat.lat < bounds[3]) {
+    var bounds = map.getMaxBounds();
+    if (lngLat.lng > bounds.getWest() && lngLat.lng < bounds.getEast() && lngLat.lat > bounds.getSouth() && lngLat.lat < bounds.getNorth()) {
       return true;
     }else{
       return false;
