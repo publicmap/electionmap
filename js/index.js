@@ -45,7 +45,7 @@ map.on('load', () => {
   //
 
   // Find user location
-  locateUser(map, mapControls.geolocate, mapLayers.map, showDataAtPoint);
+  locateUser(map, mapControls.geolocate, showDataAtPoint);
   
 
   mapControls.search.on('result', (e)=>{

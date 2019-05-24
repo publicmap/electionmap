@@ -102,7 +102,32 @@ function addMapControls(map, accessToken, {
     fitBoundsOptions: {
       maxZoom: geolocate.zoom
     }
-  })
+  });
+
+  //  BUG: Handle geolocation outside map bounds 
+  // https://github.com/mapbox/mapbox-gl-js/issues/4872
+  // https://bl.ocks.org/andrewharvey/6c6282db4a7c9b316ebd51421160c5e4
+  (function() {
+    var proxied = geolocate._updateCamera;
+    geolocate._updateCamera = function() {
+        // get geolocation
+        var location = new mapboxgl.LngLat(arguments[0].coords.longitude, arguments[0].coords.latitude);
+        var bounds = map.getMaxBounds();
+
+        if (bounds) {
+            // if geolocation is within maxBounds
+            if (location.lng >= bounds.getWest() && location.lng <= bounds.getEast() &&
+                location.lat >= bounds.getSouth() && location.lat <= bounds.getNorth()) {
+                return proxied.apply( this, arguments );
+            } else {
+                console.log('Geolocate is outside bounds:', location);
+                return null;
+            }
+        }
+        return proxied.apply( this, arguments );
+    };
+})();
+
   map.addControl(geolocate, geolocate.position);
 
   // Add  map UI controls
@@ -280,14 +305,9 @@ function locateUser(map, geolocateControl, {
   // Display user location on the map
   function showLocation(lngLat, options) {
 
-    // User has an active location clicked and thus we don't need Browser Geolocation
-    if (Markers.userHasClicked()) {
-      return;
-    }
-
-    // Abort if user coordinate is outside map area
+    // Check if coordinate is within map bounds
     if (!isPointWithinBounds(lngLat)) {
-      console.log('Geolocate is outside map area', lngLat, options);
+      console.log('Location is outside map area', lngLat, options);
       return
     }
 
@@ -299,48 +319,22 @@ function locateUser(map, geolocateControl, {
   // Try to determine accurate user location using HTML5 geolocation
   
   if (!Markers.userHasClicked()) {
-    
+ 
     // On finding GPS location
-  geolocateControl.trigger();
+    geolocateControl.trigger();
+    geolocateControl.on('geolocate', function(e) {
 
-  // Handle geolocation outside map area
-  // https://bl.ocks.org/andrewharvey/6c6282db4a7c9b316ebd51421160c5e4
-  (function() {
-    var proxied = geolocateControl._updateCamera;
-    geolocateControl._updateCamera = function() {
-        // get geolocation
-        var location = new mapboxgl.LngLat(arguments[0].coords.longitude, arguments[0].coords.latitude);
+      browserLocated = true;
 
-        var bounds = map.getMaxBounds();
-
-        if (bounds) {
-            // if geolocation is within maxBounds
-            var lngLat = {
-              lng: location.longitude,
-              lat: location.latitude
-            }
-            if (isPointWithinBounds(lngLat)) {
-                return proxied.apply( this, arguments );
-            } else {
-                return null;
-            }
-        }
-        return proxied.apply( this, arguments );
-    };
-})();
-  geolocateControl.on('geolocate', function(e) {
-
-    browserLocated = true;
-
-    showLocation({
-      lng: e.coords.longitude,
-      lat: e.coords.latitude
-    }, {
-      source: 'geolocation',
-      accuracy: e.coords.accuracy,
-      details: e.coords
-    })
-  });
+      showLocation({
+        lng: e.coords.longitude,
+        lat: e.coords.latitude
+      }, {
+        source: 'geolocation',
+        accuracy: e.coords.accuracy,
+        details: e.coords
+      })
+    });
 
   } else {
     console.log("Browser does not support geolocation!")

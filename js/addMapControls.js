@@ -23,7 +23,31 @@ function addMapControls(map, accessToken, {
     fitBoundsOptions: {
       maxZoom: geolocate.zoom
     }
-  })
+  });
+
+  //  BUG: Handle geolocation outside map bounds 
+  // https://github.com/mapbox/mapbox-gl-js/issues/4872
+  // https://bl.ocks.org/andrewharvey/6c6282db4a7c9b316ebd51421160c5e4
+  (function() {
+    var proxied = geolocate._updateCamera;
+    geolocate._updateCamera = function() {
+        // get geolocation
+        var location = new mapboxgl.LngLat(arguments[0].coords.longitude, arguments[0].coords.latitude);
+        var bounds = map.getMaxBounds();
+
+        if (bounds) {
+            // if geolocation is within maxBounds
+            if (location.lng >= bounds.getWest() && location.lng <= bounds.getEast() &&
+                location.lat >= bounds.getSouth() && location.lat <= bounds.getNorth()) {
+                return proxied.apply( this, arguments );
+            } else {
+                return null;
+            }
+        }
+        return proxied.apply( this, arguments );
+    };
+})();
+
   map.addControl(geolocate, geolocate.position);
 
   // Add  map UI controls
