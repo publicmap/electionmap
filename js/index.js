@@ -1,11 +1,17 @@
 'use strict';
 
+// Map configuration options
+var mapLayers = require('./map-layer-config')
+
 var addMapControls = require('./addMapControls')
 var showDataAtPoint = require('./show-data-at-point')
 var locateUser = require('./locate-user')
-var mapLayers = require('./map-layer-config')
 var addMapLayers = require('./add-map-layers')
 var addSpreadsheetData = require('./add-spreadsheet-data')
+
+//
+// Map initialization
+//
 
 // Enable Mapbox services
 mapboxgl.accessToken = mapLayers['access-token'];
@@ -13,7 +19,20 @@ mapboxgl.accessToken = mapLayers['access-token'];
 // Initialize GL map
 var map = new mapboxgl.Map(mapLayers.map);
 
+// Add map UI controls
+var mapControls = addMapControls(map, mapboxgl.accessToken, {
+  mapConfig: mapLayers.map,
+  search: {
+    position: 'top-right',
+    countries: 'in'
+  }
+});
+
 map.on('load', () => {
+
+  //
+  // Map customizationns
+  //
 
   // Setup map layers for styling
   addMapLayers(map);
@@ -21,24 +40,26 @@ map.on('load', () => {
   // Load additional attributes from spreadsheet
   addSpreadsheetData();
 
-  // Find user location
-  locateUser(map, showDataAtPoint);
+  //
+  // Define map interactivity
+  //
 
-  // Add map UI controls
-  addMapControls(map, mapboxgl.accessToken, {
-    MapboxGeocoder: {
-      position: 'top-right',
-      countries: 'in'
-    }
-  });
+  // Find user location
+  locateUser(map, mapControls.geolocate, showDataAtPoint);
+  
+
+  mapControls.search.on('result', (e)=>{
+    showDataAtPoint(map, { lng: e.result.center[0], lat: e.result.center[1]}, e)
+  })
   map.touchZoomRotate.disableRotation();
 
-  //Define map interactivity
 
   map.on('click', mapLayers["click-layer-ids"][0], (e) => {
 
-    // Show details of map features at location
-    showDataAtPoint(map, e)
+    map.flyTo({
+      center: e.lngLat
+    })
+    showDataAtPoint(map, e.lngLat)
 
   })
 

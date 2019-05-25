@@ -1,22 +1,20 @@
 {
   "name": "electionmap",
-  "version": "0.0.1",
-  "description": "Electoral Maps",
+  "version": "0.1.0",
+  "description": "A Mapbox GL web app to explore electoral data spatially",
   "main": "index.js",
   "scripts": {
-    "start": "browserify js/index.js > js/dist/index.js && budo js/index.js --serve=js/dist/index.js --live -d",
+    "start": "budo js/index.js:js/dist/index.js --live --ssl -d",
     "build": "browserify js/index.js > js/dist/index.js"
   },
-  "author": "Arun Ganesh",
+  "author": "Arun Ganesh, Nikhil VJ, Sanjay Bangar, Srihari Thalla",
   "license": "Unlicense",
   "devDependencies": {
-    "browserify": "",
-    "budo": ""
+    "browserify": "^16.2.3",
+    "budo": "^11.6.2"
   },
   "dependencies": {
-    "@mapbox/mapbox-gl-geocoder": "",
-    "@mapbox/mapbox-sdk": "",
-    "xtend": ""
+    "fetch-retry": "^2.2.0"
   },
   "repository": {
     "type": "git",

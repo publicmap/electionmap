@@ -13,7 +13,7 @@ function queryLayerFeatures(map, latLng, layers, cb, options) {
   tilesetIds = [...new Set(tilesetIds)];
 
   // Create object to hold query results of map features at a point
-  var featuresAtPoint = {queryLocation: latLng};
+  var featuresAtPoint = {queryLngLat: latLng};
 
   // Attempt to query the visible tile layers directly instead of using a request to the tilequery API
   map.queryRenderedFeatures(map.project(latLng), {
