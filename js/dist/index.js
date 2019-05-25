@@ -98,7 +98,6 @@ function addMapControls(map, accessToken, {
       enableHighAccuracy: false,
       timeout: 4000
     },
-    trackUserLocation: true,
     fitBoundsOptions: {
       maxZoom: geolocate.zoom
     }
